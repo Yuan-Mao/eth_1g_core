@@ -1,5 +1,5 @@
 
-module ethernet_with_buffer #
+module mac_with_buffer #
 (
       parameter  PLATFORM             = "SIM"
     , parameter  buf_size_p           = 2048 // byte

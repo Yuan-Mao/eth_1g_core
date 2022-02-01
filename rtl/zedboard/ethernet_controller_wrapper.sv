@@ -56,11 +56,11 @@ module ethernet_controller_wrapper #
     end
     wire reset_clk250_li  = reset_clk250_sync_r[0];
 
-    ethernet_controller_core #(
+    ethernet_controller #(
         .PLATFORM(PLATFORM)
         ,.buf_size_p(buf_size_p)
         ,.axis_width_p(axis_width_p))
-     eth_ctr_core (
+     eth_ctr (
         .clk_i
         ,.reset_i
         ,.clk250_i

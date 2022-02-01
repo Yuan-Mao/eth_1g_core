@@ -1,5 +1,5 @@
 
-module ethernet_controller_core #
+module ethernet_controller #
 (
       parameter  PLATFORM             = "SIM"
     , parameter  buf_size_p           = 2048 // byte
@@ -142,7 +142,7 @@ module ethernet_controller_core #
     // synopsys translate_on
 
 
-    ethernet_with_buffer #(
+    mac_with_buffer #(
       .PLATFORM(PLATFORM)
      ,.buf_size_p(buf_size_p)
      ,.axis_width_p(axis_width_p)
