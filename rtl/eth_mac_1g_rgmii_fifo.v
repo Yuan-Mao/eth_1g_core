@@ -139,8 +139,11 @@ wire        rx_fifo_axis_tuser;
 wire tx_error_underflow_int;
 
 reg [0:0] tx_sync_reg_1;
+(* ASYNC_REG = "TRUE", SHREG_EXTRACT = "NO" *)
 reg [0:0] tx_sync_reg_2;
+(* ASYNC_REG = "TRUE", SHREG_EXTRACT = "NO" *)
 reg [0:0] tx_sync_reg_3;
+(* ASYNC_REG = "TRUE", SHREG_EXTRACT = "NO" *)
 reg [0:0] tx_sync_reg_4;
 
 bit gtx_clk;
@@ -194,8 +197,11 @@ wire rx_error_bad_frame_int;
 wire rx_error_bad_fcs_int;
 
 reg [1:0] rx_sync_reg_1;
+(* ASYNC_REG = "TRUE", SHREG_EXTRACT = "NO" *)
 reg [1:0] rx_sync_reg_2;
+(* ASYNC_REG = "TRUE", SHREG_EXTRACT = "NO" *)
 reg [1:0] rx_sync_reg_3;
+(* ASYNC_REG = "TRUE", SHREG_EXTRACT = "NO" *)
 reg [1:0] rx_sync_reg_4;
 
 assign rx_error_bad_frame = rx_sync_reg_3[0] ^ rx_sync_reg_4[0];
@@ -223,7 +229,9 @@ end
 
 wire [1:0] speed_int;
 
+(* ASYNC_REG = "TRUE", SHREG_EXTRACT = "NO" *)
 reg [1:0] speed_sync_reg_1;
+(* ASYNC_REG = "TRUE", SHREG_EXTRACT = "NO" *)
 reg [1:0] speed_sync_reg_2;
 
 assign speed = speed_sync_reg_2;
