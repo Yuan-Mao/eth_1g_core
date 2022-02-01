@@ -555,5 +555,6 @@ end
 
 endgenerate
 
+endmodule
 
 `resetall
