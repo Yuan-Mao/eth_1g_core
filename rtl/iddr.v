@@ -65,6 +65,8 @@ parameter TARGET = (PLATFORM == "ZEDBOARD") ? "XILINX" : "";
 // Use IODDR2 for Spartan-6
 parameter IODDR_STYLE = (PLATFORM == "ZEDBOARD") ? "IODDR" : "";
 
+reg [WIDTH-1:0] delayed_d;
+
 genvar n;
 
 generate
@@ -72,6 +74,30 @@ generate
 if (TARGET == "XILINX") begin
     for (n = 0; n < WIDTH; n = n + 1) begin : iddr
         if (IODDR_STYLE == "IODDR") begin
+            if (PLATFORM == "ZEDBOARD") begin
+                IDELAYE2 #(
+                    .DELAY_SRC("IDATAIN")
+                   ,.IDELAY_TYPE("FIXED")
+                   ,.IDELAY_VALUE(7) // 13
+                   ,.REFCLK_FREQUENCY(200.0)
+                   ,.SIGNAL_PATTERN("DATA")
+                ) idelay2_inst (
+                    .CNTVALUEOUT(/* UNUSED */)
+                   ,.DATAOUT(delayed_d[n])
+                   ,.C(1'b0)
+                   ,.CE(1'b0)
+                   ,.CINVCTRL(1'b0)
+                   ,.CNTVALUEIN('0)
+                   ,.DATAIN(/* UNUSED */)
+                   ,.IDATAIN(d[n])
+                   ,.INC(1'b0)
+                   ,.LD(1'b0)
+                   ,.LDPIPEEN(1'b0)
+                   ,.REGRST(1'b0)
+                );
+            end else begin
+                assign delayed_d[n] = d[n];
+            end
             IDDR #(
                 .DDR_CLK_EDGE("SAME_EDGE_PIPELINED"),
                 .SRTYPE("ASYNC")
@@ -81,7 +107,7 @@ if (TARGET == "XILINX") begin
                 .Q2(q2[n]),
                 .C(clk),
                 .CE(1'b1),
-                .D(d[n]),
+                .D(delayed_d[n]),
                 .R(1'b0),
                 .S(1'b0)
             );
