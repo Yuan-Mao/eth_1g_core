@@ -146,7 +146,7 @@ module ethernet_controller_core #
       .PLATFORM(PLATFORM)
      ,.buf_size_p(buf_size_p)
      ,.axis_width_p(axis_width_p)
-    ) ethernet_core (
+    ) eth (
       .clk_i(clk_i)
      ,.reset_i(reset_i)
      ,.clk250_i(clk250_i)
