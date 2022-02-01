@@ -27,7 +27,6 @@ THE SOFTWARE.
 `resetall
 `timescale 1ns / 1ps
 `default_nettype none
-
 /*
  * Parametrizable combinatorial parallel LFSR/CRC
  */
@@ -200,6 +199,10 @@ PRBS31      Fibonacci, inverted     31      31'h10000001    any
 
 */
 
+integer i, j, k;
+
+/*
+
 reg [LFSR_WIDTH-1:0] lfsr_mask_state[LFSR_WIDTH-1:0];
 reg [DATA_WIDTH-1:0] lfsr_mask_data[LFSR_WIDTH-1:0];
 reg [LFSR_WIDTH-1:0] output_mask_state[DATA_WIDTH-1:0];
@@ -208,7 +211,6 @@ reg [DATA_WIDTH-1:0] output_mask_data[DATA_WIDTH-1:0];
 reg [LFSR_WIDTH-1:0] state_val = 0;
 reg [DATA_WIDTH-1:0] data_val = 0;
 
-integer i, j, k;
 
 initial begin
     // init bit masks
@@ -351,22 +353,134 @@ initial begin
         end
     end
 
-    // for (i = 0; i < LFSR_WIDTH; i = i + 1) begin
-    //     $display("%b %b", lfsr_mask_state[i], lfsr_mask_data[i]);
-    // end
+//    $display("wire [%0d:0][%0d:0] lfsr_mask_state = {", LFSR_WIDTH - 1, LFSR_WIDTH - 1);
+//    for (i = 0; i < LFSR_WIDTH; i = i + 1) begin
+//        $display("%b, ", lfsr_mask_state[i]);
+//    end
+//    $display("};\n");
+//    $display("wire [%0d:0][%0d:0] lfsr_mask_data = {", LFSR_WIDTH - 1, DATA_WIDTH - 1);
+//    for (i = 0; i < LFSR_WIDTH; i = i + 1) begin
+//        $display("%b, ", lfsr_mask_data[i]);
+//    end
+//    $display("};\n");
+//   $display("wire [%0d:0][%0d:0] output_mask_state = {", DATA_WIDTH - 1, LFSR_WIDTH - 1);
+//   for (i = 0; i < DATA_WIDTH; i = i + 1) begin
+//       $display("%b, ", output_mask_state[i]);
+//   end
+//   $display("};\n");
+//   $display("wire [%0d:0][%0d:0] output_mask_data = {", DATA_WIDTH - 1, DATA_WIDTH - 1);
+//   for (i = 0; i < DATA_WIDTH; i = i + 1) begin
+//       $display("%b, ", output_mask_data[i]);
+//   end
+//   $display("};\n");
+end
+*/
+
+wire [31:0][31:0] lfsr_mask_state = {
+32'b00000000000000000000000010000010,
+32'b00000000000000000000000011000011,
+32'b00000000000000000000000011100011,
+32'b00000000000000000000000001110001,
+32'b00000000000000000000000010111010,
+32'b00000000000000000000000011011111,
+32'b00000000000000000000000001101111,
+32'b00000000000000000000000010110101,
+32'b10000000000000000000000011011000,
+32'b01000000000000000000000001101100,
+32'b00100000000000000000000010110100,
+32'b00010000000000000000000011011000,
+32'b00001000000000000000000011101110,
+32'b00000100000000000000000001110111,
+32'b00000010000000000000000000111011,
+32'b00000001000000000000000000011101,
+32'b00000000100000000000000010001100,
+32'b00000000010000000000000001000110,
+32'b00000000001000000000000000100011,
+32'b00000000000100000000000000010001,
+32'b00000000000010000000000000001000,
+32'b00000000000001000000000000000100,
+32'b00000000000000100000000010000000,
+32'b00000000000000010000000011000010,
+32'b00000000000000001000000001100001,
+32'b00000000000000000100000000110000,
+32'b00000000000000000010000010011010,
+32'b00000000000000000001000001001101,
+32'b00000000000000000000100000100110,
+32'b00000000000000000000010000010011,
+32'b00000000000000000000001000001001,
+32'b00000000000000000000000100000100
+};
+
+wire [31:0][7:0] lfsr_mask_data = {
+8'b10000010,
+8'b11000011,
+8'b11100011,
+8'b01110001,
+8'b10111010,
+8'b11011111,
+8'b01101111,
+8'b10110101,
+8'b11011000,
+8'b01101100,
+8'b10110100,
+8'b11011000,
+8'b11101110,
+8'b01110111,
+8'b00111011,
+8'b00011101,
+8'b10001100,
+8'b01000110,
+8'b00100011,
+8'b00010001,
+8'b00001000,
+8'b00000100,
+8'b10000000,
+8'b11000010,
+8'b01100001,
+8'b00110000,
+8'b10011010,
+8'b01001101,
+8'b00100110,
+8'b00010011,
+8'b00001001,
+8'b00000100
+};
+
+wire [7:0][31:0] output_mask_state = {
+32'b00000000000000000000000010000010,
+32'b00000000000000000000000001000001,
+32'b00000000000000000000000000100000,
+32'b00000000000000000000000000010000,
+32'b00000000000000000000000000001000,
+32'b00000000000000000000000000000100,
+32'b00000000000000000000000000000010,
+32'b00000000000000000000000000000001
+};
+
+wire [7:0][7:0] output_mask_data = {
+8'b10000010,
+8'b01000001,
+8'b00100000,
+8'b00010000,
+8'b00001000,
+8'b00000100,
+8'b00000010,
+8'b00000001
+};
+
+initial begin
+    if(LFSR_WIDTH != 32 || LFSR_POLY != 32'h4c11db7 ||
+        LFSR_CONFIG != "GALOIS" || LFSR_FEED_FORWARD != 0 ||
+        REVERSE != 1 || DATA_WIDTH != 8) begin
+        $error("Error: unsupported lfsr settings");
+        $finish;
+    end
 end
 
-// synthesis translate_off
-`define SIMULATION
-// synthesis translate_on
 
-`ifdef SIMULATION
-// "AUTO" style is "REDUCTION" for faster simulation
-parameter STYLE_INT = (STYLE == "AUTO") ? "REDUCTION" : STYLE;
-`else
+
 // "AUTO" style is "LOOP" for better synthesis result
 parameter STYLE_INT = (STYLE == "AUTO") ? "LOOP" : STYLE;
-`endif
 
 genvar n;
 
@@ -441,6 +555,5 @@ end
 
 endgenerate
 
-endmodule
 
 `resetall
