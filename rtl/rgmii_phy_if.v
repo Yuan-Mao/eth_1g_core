@@ -31,18 +31,7 @@ THE SOFTWARE.
  */
 module rgmii_phy_if #
 (
-    // target ("SIM", "GENERIC", "XILINX", "ALTERA")
-    parameter TARGET = "GENERIC",
-    // IODDR style ("IODDR", "IODDR2")
-    // Use IODDR for Virtex-4, Virtex-5, Virtex-6, 7 Series, Ultrascale
-    // Use IODDR2 for Spartan-6
-    parameter IODDR_STYLE = "IODDR2",
-    // Clock input style ("BUFG", "BUFR", "BUFIO", "BUFIO2")
-    // Use BUFR for Virtex-6, 7-series
-    // Use BUFG for Virtex-5, Spartan-6, Ultrascale
-    parameter CLOCK_INPUT_STYLE = "BUFG",
-    // Use 90 degree clock for RGMII transmit ("TRUE", "FALSE")
-    parameter USE_CLK90 = "TRUE"
+    parameter PLATFORM = "SIM"
 )
 (
     input  wire        clk,
@@ -87,9 +76,7 @@ wire rgmii_rx_ctl_2;
 
 ssio_ddr_in #
 (
-    .TARGET(TARGET),
-    .CLOCK_INPUT_STYLE(CLOCK_INPUT_STYLE),
-    .IODDR_STYLE(IODDR_STYLE),
+    .PLATFORM(PLATFORM),
     .WIDTH(5)
 )
 rx_ssio_ddr_inst (

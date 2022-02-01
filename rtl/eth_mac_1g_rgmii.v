@@ -31,18 +31,7 @@ THE SOFTWARE.
  */
 module eth_mac_1g_rgmii #
 (
-    // target ("SIM", "GENERIC", "XILINX", "ALTERA")
-    parameter TARGET = "GENERIC",
-    // IODDR style ("IODDR", "IODDR2")
-    // Use IODDR for Virtex-4, Virtex-5, Virtex-6, 7 Series, Ultrascale
-    // Use IODDR2 for Spartan-6
-    parameter IODDR_STYLE = "IODDR2",
-    // Clock input style ("BUFG", "BUFR", "BUFIO", "BUFIO2")
-    // Use BUFR for Virtex-6, 7-series
-    // Use BUFG for Virtex-5, Spartan-6, Ultrascale
-    parameter CLOCK_INPUT_STYLE = "BUFG",
-    // Use 90 degree clock for RGMII transmit ("TRUE", "FALSE")
-    parameter USE_CLK90 = "TRUE",
+    parameter PLATFORM = "SIM",
     parameter ENABLE_PADDING = 1,
     parameter MIN_FRAME_LENGTH = 64
 )
@@ -182,10 +171,7 @@ end
 assign speed = speed_reg;
 
 rgmii_phy_if #(
-    .TARGET(TARGET),
-    .IODDR_STYLE(IODDR_STYLE),
-    .CLOCK_INPUT_STYLE(CLOCK_INPUT_STYLE),
-    .USE_CLK90(USE_CLK90)
+    .PLATFORM(PLATFORM)
 )
 rgmii_phy_if_inst (
     .clk(gtx_clk),

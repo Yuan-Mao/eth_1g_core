@@ -31,18 +31,8 @@ THE SOFTWARE.
  */
 module eth_mac_1g_rgmii_fifo #
 (
-    // target ("SIM", "GENERIC", "XILINX", "ALTERA")
-    parameter TARGET = "GENERIC",
-    // IODDR style ("IODDR", "IODDR2")
-    // Use IODDR for Virtex-4, Virtex-5, Virtex-6, 7 Series, Ultrascale
-    // Use IODDR2 for Spartan-6
-    parameter IODDR_STYLE = "IODDR2",
-    // Clock input style ("BUFG", "BUFR", "BUFIO", "BUFIO2")
-    // Use BUFR for Virtex-6, 7-series
-    // Use BUFG for Virtex-5, Spartan-6, Ultrascale
-    parameter CLOCK_INPUT_STYLE = "BUFG",
-    // Use 90 degree clock for RGMII transmit ("TRUE", "FALSE")
-    parameter USE_CLK90 = "TRUE",
+    // platform ("ZEDBOARD", "SIM")
+    parameter PLATFORM = "SIM",
     parameter AXIS_DATA_WIDTH = 8,
     parameter AXIS_KEEP_ENABLE = (AXIS_DATA_WIDTH>8),
     parameter AXIS_KEEP_WIDTH = (AXIS_DATA_WIDTH/8),
@@ -241,10 +231,7 @@ always @(posedge logic_clk) begin
 end
 
 eth_mac_1g_rgmii #(
-    .TARGET(TARGET),
-    .IODDR_STYLE(IODDR_STYLE),
-    .CLOCK_INPUT_STYLE(CLOCK_INPUT_STYLE),
-    .USE_CLK90(USE_CLK90),
+    .PLATFORM(PLATFORM),
     .ENABLE_PADDING(ENABLE_PADDING),
     .MIN_FRAME_LENGTH(MIN_FRAME_LENGTH)
 )

@@ -31,16 +31,7 @@ THE SOFTWARE.
  */
 module ssio_ddr_in #
 (
-    // target ("SIM", "GENERIC", "XILINX", "ALTERA")
-    parameter TARGET = "GENERIC",
-    // IODDR style ("IODDR", "IODDR2")
-    // Use IODDR for Virtex-4, Virtex-5, Virtex-6, 7 Series, Ultrascale
-    // Use IODDR2 for Spartan-6
-    parameter IODDR_STYLE = "IODDR2",
-    // Clock input style ("BUFG", "BUFR", "BUFIO", "BUFIO2")
-    // Use BUFR for Virtex-6, 7-series
-    // Use BUFG for Virtex-5, Spartan-6, Ultrascale
-    parameter CLOCK_INPUT_STYLE = "BUFG",
+    parameter PLATFORM = "SIM",
     // Width of register in bits
     parameter WIDTH = 1
 )
@@ -57,6 +48,17 @@ module ssio_ddr_in #
 
 wire clk_int;
 wire clk_io;
+
+// target ("SIM", "GENERIC", "XILINX", "ALTERA")
+parameter TARGET = (PLATFORM == "ZEDBOARD") ? "XILINX" : "SIM";
+// IODDR style ("IODDR", "IODDR2")
+// Use IODDR for Virtex-4, Virtex-5, Virtex-6, 7 Series, Ultrascale
+// Use IODDR2 for Spartan-6
+parameter IODDR_STYLE = (PLATFORM == "ZEDBOARD") ? "IODDR" : "";
+// Clock input style ("BUFG", "BUFR", "BUFIO", "BUFIO2")
+// Use BUFR for Virtex-6, 7-series
+// Use BUFG for Virtex-5, Spartan-6, Ultrascale
+parameter CLOCK_INPUT_STYLE = (PLATFORM == "ZEDBOARD") ? "BUFR" : "";
 
 generate
 
@@ -133,8 +135,7 @@ end
 endgenerate
 
 iddr #(
-    .TARGET(TARGET),
-    .IODDR_STYLE(IODDR_STYLE),
+    .PLATFORM(PLATFORM),
     .WIDTH(WIDTH)
 )
 data_iddr_inst (
