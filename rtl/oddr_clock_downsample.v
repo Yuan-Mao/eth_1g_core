@@ -1,7 +1,6 @@
 
 
 `include "bsg_defines.v"
-`include "defines.vh"
 
 module oddr_clock_downsample
   (// reset, data and ready signals synchronous to clk_i
