@@ -48,7 +48,7 @@ module rgmii_phy_if #
 )
 (
     input  wire        clk,
-    input  wire        clk90,
+    input  wire        clk250_i,
     input  wire        rst,
 
     /*
@@ -205,33 +205,29 @@ always @* begin
     end
 end
 
-wire phy_rgmii_tx_clk_new;
-wire [3:0] phy_rgmii_txd_new;
-wire phy_rgmii_tx_ctl_new;
+wire phy_rgmii_tx_clk_int;
 
-oddr #(
-    .TARGET(TARGET),
-    .IODDR_STYLE(IODDR_STYLE),
-    .WIDTH(1)
-)
-clk_oddr_inst (
-    .clk(USE_CLK90 == "TRUE" ? clk90 : clk),
-    .d1(rgmii_tx_clk_1),
-    .d2(rgmii_tx_clk_2),
-    .q(phy_rgmii_tx_clk)
-);
+oddr_clock_downsample
+  oddr_clock_downsample_inst (
+    .reset_i(rst)
+    ,.clk_i(clk250_i)
+    ,.clk_setting_i({rgmii_tx_clk_2, rgmii_tx_clk_1})
+    ,.ready_o(/* UNUSED */)
+    ,.clk_r_o(phy_rgmii_tx_clk_int)
+  );
 
-oddr #(
-    .TARGET(TARGET),
-    .IODDR_STYLE(IODDR_STYLE),
-    .WIDTH(5)
-)
-data_oddr_inst (
-    .clk(clk),
-    .d1({rgmii_txd_1, rgmii_tx_ctl_1}),
-    .d2({rgmii_txd_2, rgmii_tx_ctl_2}),
-    .q({phy_rgmii_txd, phy_rgmii_tx_ctl})
-);
+bsg_link_oddr_phy #(.width_p(5))
+  data_oddr_inst (
+    .reset_i(rst)
+    ,.clk_i(clk250_i)
+    ,.data_i({{rgmii_txd_2, rgmii_tx_ctl_2}, {rgmii_txd_1, rgmii_tx_ctl_1}})
+    ,.ready_o(/* UNUSED */)
+              
+    ,.data_r_o({phy_rgmii_txd, phy_rgmii_tx_ctl})
+    ,.clk_r_o(/* UNUSED */)
+  );
+
+assign phy_rgmii_tx_clk = phy_rgmii_tx_clk_int;
 
 assign mac_gmii_tx_clk = clk;
 

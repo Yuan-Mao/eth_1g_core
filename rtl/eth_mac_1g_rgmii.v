@@ -50,7 +50,7 @@ module eth_mac_1g_rgmii #
 )
 (
     input  wire        gtx_clk,
-    input  wire        gtx_clk90,
+    input  wire        gtx_clk250,
     input  wire        gtx_rst,
     output wire        rx_clk,
     output wire        rx_rst,
@@ -191,7 +191,7 @@ rgmii_phy_if #(
 )
 rgmii_phy_if_inst (
     .clk(gtx_clk),
-    .clk90(gtx_clk90),
+    .clk250_i(gtx_clk250),
     .rst(gtx_rst),
 
     .mac_gmii_rx_clk(rx_clk),

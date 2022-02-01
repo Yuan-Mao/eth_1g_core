@@ -64,11 +64,11 @@ module eth_mac_1g_rgmii_fifo #
     parameter RX_DROP_WHEN_FULL = RX_DROP_OVERSIZE_FRAME
 )
 (
-    input  wire                       gtx_clk,
-    input  wire                       gtx_clk90,
+    input  wire                       gtx_clk250,
     input  wire                       gtx_rst,
     input  wire                       logic_clk,
     input  wire                       logic_rst,
+    output wire                       gtx_rst_late,
 
     /*
      * AXI input
@@ -143,6 +143,31 @@ reg [0:0] tx_sync_reg_1;
 reg [0:0] tx_sync_reg_2;
 reg [0:0] tx_sync_reg_3;
 reg [0:0] tx_sync_reg_4;
+
+bit gtx_clk;
+bsg_counter_clock_downsample #(.width_p(2))
+clock_downsampler (
+    .clk_i(gtx_clk250),
+    .reset_i(gtx_rst),
+    .val_i(2'b0), // divided by 2
+    .clk_r_o(gtx_clk)
+); 
+
+reg gtx_rst_late_r;
+reg [2:0] reset_hold_count_r;
+always @(posedge gtx_clk250) begin
+    if(gtx_rst) begin
+        reset_hold_count_r <= '1;
+        gtx_rst_late_r <= 1'b1;
+    end
+    else begin
+        gtx_rst_late_r <= (reset_hold_count_r != '0);
+        if(reset_hold_count_r != '0)
+            reset_hold_count_r <= reset_hold_count_r - 1;
+    end
+end
+
+assign gtx_rst_late = gtx_rst_late_r;
 
 assign tx_error_underflow = tx_sync_reg_3[0] ^ tx_sync_reg_4[0];
 
@@ -219,7 +244,7 @@ eth_mac_1g_rgmii #(
 )
 eth_mac_1g_rgmii_inst (
     .gtx_clk(gtx_clk),
-    .gtx_clk90(gtx_clk90),
+    .gtx_clk250(gtx_clk250),
     .gtx_rst(gtx_rst),
     .tx_clk(tx_clk),
     .tx_rst(tx_rst),
