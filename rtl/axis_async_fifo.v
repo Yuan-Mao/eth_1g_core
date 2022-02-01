@@ -161,61 +161,60 @@ localparam DEST_OFFSET = ID_OFFSET   + (ID_ENABLE   ? ID_WIDTH   : 0);
 localparam USER_OFFSET = DEST_OFFSET + (DEST_ENABLE ? DEST_WIDTH : 0);
 localparam WIDTH       = USER_OFFSET + (USER_ENABLE ? USER_WIDTH : 0);
 
-reg [ADDR_WIDTH:0] wr_ptr_reg = {ADDR_WIDTH+1{1'b0}};
-reg [ADDR_WIDTH:0] wr_ptr_cur_reg = {ADDR_WIDTH+1{1'b0}};
-reg [ADDR_WIDTH:0] wr_ptr_gray_reg = {ADDR_WIDTH+1{1'b0}};
-reg [ADDR_WIDTH:0] wr_ptr_sync_gray_reg = {ADDR_WIDTH+1{1'b0}};
-reg [ADDR_WIDTH:0] wr_ptr_cur_gray_reg = {ADDR_WIDTH+1{1'b0}};
-reg [ADDR_WIDTH:0] rd_ptr_reg = {ADDR_WIDTH+1{1'b0}};
-reg [ADDR_WIDTH:0] rd_ptr_gray_reg = {ADDR_WIDTH+1{1'b0}};
+reg [ADDR_WIDTH:0] wr_ptr_reg;
+reg [ADDR_WIDTH:0] wr_ptr_cur_reg;
+reg [ADDR_WIDTH:0] wr_ptr_gray_reg;
+reg [ADDR_WIDTH:0] wr_ptr_sync_gray_reg;
+reg [ADDR_WIDTH:0] wr_ptr_cur_gray_reg;
+reg [ADDR_WIDTH:0] rd_ptr_reg;
+reg [ADDR_WIDTH:0] rd_ptr_gray_reg;
 
 reg [ADDR_WIDTH:0] wr_ptr_temp;
 reg [ADDR_WIDTH:0] rd_ptr_temp;
 
 (* SHREG_EXTRACT = "NO" *)
-reg [ADDR_WIDTH:0] wr_ptr_gray_sync1_reg = {ADDR_WIDTH+1{1'b0}};
+reg [ADDR_WIDTH:0] wr_ptr_gray_sync1_reg;
 (* SHREG_EXTRACT = "NO" *)
-reg [ADDR_WIDTH:0] wr_ptr_gray_sync2_reg = {ADDR_WIDTH+1{1'b0}};
+reg [ADDR_WIDTH:0] wr_ptr_gray_sync2_reg;
 (* SHREG_EXTRACT = "NO" *)
-reg [ADDR_WIDTH:0] rd_ptr_gray_sync1_reg = {ADDR_WIDTH+1{1'b0}};
+reg [ADDR_WIDTH:0] rd_ptr_gray_sync1_reg;
 (* SHREG_EXTRACT = "NO" *)
-reg [ADDR_WIDTH:0] rd_ptr_gray_sync2_reg = {ADDR_WIDTH+1{1'b0}};
+reg [ADDR_WIDTH:0] rd_ptr_gray_sync2_reg;
 
-reg wr_ptr_update_valid_reg = 1'b0;
-reg wr_ptr_update_reg = 1'b0;
+reg wr_ptr_update_valid_reg;
+reg wr_ptr_update_reg;
 (* SHREG_EXTRACT = "NO" *)
-reg wr_ptr_update_sync1_reg = 1'b0;
+reg wr_ptr_update_sync1_reg;
 (* SHREG_EXTRACT = "NO" *)
-reg wr_ptr_update_sync2_reg = 1'b0;
+reg wr_ptr_update_sync2_reg;
 (* SHREG_EXTRACT = "NO" *)
-reg wr_ptr_update_sync3_reg = 1'b0;
+reg wr_ptr_update_sync3_reg;
 (* SHREG_EXTRACT = "NO" *)
-reg wr_ptr_update_ack_sync1_reg = 1'b0;
+reg wr_ptr_update_ack_sync1_reg;
 (* SHREG_EXTRACT = "NO" *)
-reg wr_ptr_update_ack_sync2_reg = 1'b0;
+reg wr_ptr_update_ack_sync2_reg;
 
 (* SHREG_EXTRACT = "NO" *)
-reg s_rst_sync1_reg = 1'b1;
+reg s_rst_sync1_reg;
 (* SHREG_EXTRACT = "NO" *)
-reg s_rst_sync2_reg = 1'b1;
+reg s_rst_sync2_reg;
 (* SHREG_EXTRACT = "NO" *)
-reg s_rst_sync3_reg = 1'b1;
+reg s_rst_sync3_reg;
 (* SHREG_EXTRACT = "NO" *)
-reg m_rst_sync1_reg = 1'b1;
+reg m_rst_sync1_reg;
 (* SHREG_EXTRACT = "NO" *)
-reg m_rst_sync2_reg = 1'b1;
+reg m_rst_sync2_reg;
 (* SHREG_EXTRACT = "NO" *)
-reg m_rst_sync3_reg = 1'b1;
+reg m_rst_sync3_reg;
 
 (* ramstyle = "no_rw_check" *)
 reg [WIDTH-1:0] mem[(2**ADDR_WIDTH)-1:0];
 reg [WIDTH-1:0] mem_read_data_reg;
-reg mem_read_data_valid_reg = 1'b0;
 
 wire [WIDTH-1:0] s_axis;
 
 reg [WIDTH-1:0] m_axis_pipe_reg[PIPELINE_OUTPUT-1:0];
-reg [PIPELINE_OUTPUT-1:0] m_axis_tvalid_pipe_reg = 1'b0;
+reg [PIPELINE_OUTPUT-1:0] m_axis_tvalid_pipe_reg;
 
 // full when first TWO MSBs do NOT match, but rest matches
 // (gray code equivalent of first MSB different but rest same)
@@ -231,30 +230,30 @@ reg write;
 reg read;
 reg store_output;
 
-reg s_frame_reg = 1'b0;
-reg m_frame_reg = 1'b0;
+reg s_frame_reg;
+reg m_frame_reg;
 
-reg drop_frame_reg = 1'b0;
-reg send_frame_reg = 1'b0;
-reg overflow_reg = 1'b0;
-reg bad_frame_reg = 1'b0;
-reg good_frame_reg = 1'b0;
+reg drop_frame_reg;
+reg send_frame_reg;
+reg overflow_reg;
+reg bad_frame_reg;
+reg good_frame_reg;
 
-reg m_drop_frame_reg = 1'b0;
-reg m_terminate_frame_reg = 1'b0;
+reg m_drop_frame_reg;
+reg m_terminate_frame_reg;
 
-reg overflow_sync1_reg = 1'b0;
-reg overflow_sync2_reg = 1'b0;
-reg overflow_sync3_reg = 1'b0;
-reg overflow_sync4_reg = 1'b0;
-reg bad_frame_sync1_reg = 1'b0;
-reg bad_frame_sync2_reg = 1'b0;
-reg bad_frame_sync3_reg = 1'b0;
-reg bad_frame_sync4_reg = 1'b0;
-reg good_frame_sync1_reg = 1'b0;
-reg good_frame_sync2_reg = 1'b0;
-reg good_frame_sync3_reg = 1'b0;
-reg good_frame_sync4_reg = 1'b0;
+reg overflow_sync1_reg;
+reg overflow_sync2_reg;
+reg overflow_sync3_reg;
+reg overflow_sync4_reg;
+reg bad_frame_sync1_reg;
+reg bad_frame_sync2_reg;
+reg bad_frame_sync3_reg;
+reg bad_frame_sync4_reg;
+reg good_frame_sync1_reg;
+reg good_frame_sync2_reg;
+reg good_frame_sync3_reg;
+reg good_frame_sync4_reg;
 
 assign s_axis_tready = (FRAME_FIFO ? (!full_cur || (full_wr && DROP_OVERSIZE_FRAME) || DROP_WHEN_FULL) : !full) && !s_rst_sync3_reg;
 

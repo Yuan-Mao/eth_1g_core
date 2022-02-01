@@ -125,11 +125,11 @@ end else if (TARGET == "ALTERA") begin
 
     assign q1 = q1_delay;
 end else begin
-    reg [WIDTH-1:0] d_reg_1 = {WIDTH{1'b0}};
-    reg [WIDTH-1:0] d_reg_2 = {WIDTH{1'b0}};
+    reg [WIDTH-1:0] d_reg_1;
+    reg [WIDTH-1:0] d_reg_2;
 
-    reg [WIDTH-1:0] q_reg_1 = {WIDTH{1'b0}};
-    reg [WIDTH-1:0] q_reg_2 = {WIDTH{1'b0}};
+    reg [WIDTH-1:0] q_reg_1;
+    reg [WIDTH-1:0] q_reg_2;
 
     always @(posedge clk) begin
         d_reg_1 <= d;

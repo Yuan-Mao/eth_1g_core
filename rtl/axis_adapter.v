@@ -132,31 +132,31 @@ localparam [2:0]
     STATE_TRANSFER_IN = 3'd1,
     STATE_TRANSFER_OUT = 3'd2;
 
-reg [2:0] state_reg = STATE_IDLE, state_next;
+reg [2:0] state_reg, state_next;
 
-reg [SEGMENT_COUNT_WIDTH-1:0] segment_count_reg = 0, segment_count_next;
+reg [SEGMENT_COUNT_WIDTH-1:0] segment_count_reg, segment_count_next;
 
 reg last_segment;
 
-reg [DATA_WIDTH-1:0] temp_tdata_reg = {DATA_WIDTH{1'b0}}, temp_tdata_next;
-reg [KEEP_WIDTH-1:0] temp_tkeep_reg = {KEEP_WIDTH{1'b0}}, temp_tkeep_next;
-reg                  temp_tlast_reg = 1'b0, temp_tlast_next;
-reg [ID_WIDTH-1:0]   temp_tid_reg   = {ID_WIDTH{1'b0}}, temp_tid_next;
-reg [DEST_WIDTH-1:0] temp_tdest_reg = {DEST_WIDTH{1'b0}}, temp_tdest_next;
-reg [USER_WIDTH-1:0] temp_tuser_reg = {USER_WIDTH{1'b0}}, temp_tuser_next;
+reg [DATA_WIDTH-1:0] temp_tdata_reg, temp_tdata_next;
+reg [KEEP_WIDTH-1:0] temp_tkeep_reg, temp_tkeep_next;
+reg                  temp_tlast_reg, temp_tlast_next;
+reg [ID_WIDTH-1:0]   temp_tid_reg, temp_tid_next;
+reg [DEST_WIDTH-1:0] temp_tdest_reg, temp_tdest_next;
+reg [USER_WIDTH-1:0] temp_tuser_reg, temp_tuser_next;
 
 // internal datapath
 reg  [M_DATA_WIDTH-1:0] m_axis_tdata_int;
 reg  [M_KEEP_WIDTH-1:0] m_axis_tkeep_int;
 reg                     m_axis_tvalid_int;
-reg                     m_axis_tready_int_reg = 1'b0;
+reg                     m_axis_tready_int_reg;
 reg                     m_axis_tlast_int;
 reg  [ID_WIDTH-1:0]     m_axis_tid_int;
 reg  [DEST_WIDTH-1:0]   m_axis_tdest_int;
 reg  [USER_WIDTH-1:0]   m_axis_tuser_int;
 wire                    m_axis_tready_int_early;
 
-reg s_axis_tready_reg = 1'b0, s_axis_tready_next;
+reg s_axis_tready_reg, s_axis_tready_next;
 
 assign s_axis_tready = s_axis_tready_reg;
 
@@ -436,6 +436,8 @@ end
 
 always @(posedge clk) begin
     if (rst) begin
+        segment_count_reg <= '0;
+
         state_reg <= STATE_IDLE;
         s_axis_tready_reg <= 1'b0;
     end else begin
@@ -455,21 +457,21 @@ always @(posedge clk) begin
 end
 
 // output datapath logic
-reg [M_DATA_WIDTH-1:0] m_axis_tdata_reg  = {M_DATA_WIDTH{1'b0}};
-reg [M_KEEP_WIDTH-1:0] m_axis_tkeep_reg  = {M_KEEP_WIDTH{1'b0}};
-reg                    m_axis_tvalid_reg = 1'b0, m_axis_tvalid_next;
-reg                    m_axis_tlast_reg  = 1'b0;
-reg [ID_WIDTH-1:0]     m_axis_tid_reg    = {ID_WIDTH{1'b0}};
-reg [DEST_WIDTH-1:0]   m_axis_tdest_reg  = {DEST_WIDTH{1'b0}};
-reg [USER_WIDTH-1:0]   m_axis_tuser_reg  = {USER_WIDTH{1'b0}};
+reg [M_DATA_WIDTH-1:0] m_axis_tdata_reg;
+reg [M_KEEP_WIDTH-1:0] m_axis_tkeep_reg;
+reg                    m_axis_tvalid_reg, m_axis_tvalid_next;
+reg                    m_axis_tlast_reg;
+reg [ID_WIDTH-1:0]     m_axis_tid_reg;
+reg [DEST_WIDTH-1:0]   m_axis_tdest_reg;
+reg [USER_WIDTH-1:0]   m_axis_tuser_reg;
 
-reg [M_DATA_WIDTH-1:0] temp_m_axis_tdata_reg  = {M_DATA_WIDTH{1'b0}};
-reg [M_KEEP_WIDTH-1:0] temp_m_axis_tkeep_reg  = {M_KEEP_WIDTH{1'b0}};
-reg                    temp_m_axis_tvalid_reg = 1'b0, temp_m_axis_tvalid_next;
-reg                    temp_m_axis_tlast_reg  = 1'b0;
-reg [ID_WIDTH-1:0]     temp_m_axis_tid_reg    = {ID_WIDTH{1'b0}};
-reg [DEST_WIDTH-1:0]   temp_m_axis_tdest_reg  = {DEST_WIDTH{1'b0}};
-reg [USER_WIDTH-1:0]   temp_m_axis_tuser_reg  = {USER_WIDTH{1'b0}};
+reg [M_DATA_WIDTH-1:0] temp_m_axis_tdata_reg;
+reg [M_KEEP_WIDTH-1:0] temp_m_axis_tkeep_reg;
+reg                    temp_m_axis_tvalid_reg, temp_m_axis_tvalid_next;
+reg                    temp_m_axis_tlast_reg;
+reg [ID_WIDTH-1:0]     temp_m_axis_tid_reg;
+reg [DEST_WIDTH-1:0]   temp_m_axis_tdest_reg;
+reg [USER_WIDTH-1:0]   temp_m_axis_tuser_reg;
 
 // datapath control
 reg store_axis_int_to_output;

@@ -110,33 +110,33 @@ localparam [2:0]
     STATE_WAIT_END = 3'd6,
     STATE_IFG = 3'd7;
 
-reg [2:0] state_reg = STATE_IDLE, state_next;
+reg [2:0] state_reg, state_next;
 
 // datapath control signals
 reg reset_crc;
 reg update_crc;
 
-reg [7:0] s_tdata_reg = 8'd0, s_tdata_next;
+reg [7:0] s_tdata_reg, s_tdata_next;
 
-reg mii_odd_reg = 1'b0, mii_odd_next;
-reg [3:0] mii_msn_reg = 4'b0, mii_msn_next;
+reg mii_odd_reg, mii_odd_next;
+reg [3:0] mii_msn_reg, mii_msn_next;
 
-reg [15:0] frame_ptr_reg = 16'd0, frame_ptr_next;
+reg [15:0] frame_ptr_reg, frame_ptr_next;
 
-reg [7:0] gmii_txd_reg = 8'd0, gmii_txd_next;
-reg gmii_tx_en_reg = 1'b0, gmii_tx_en_next;
-reg gmii_tx_er_reg = 1'b0, gmii_tx_er_next;
+reg [7:0] gmii_txd_reg, gmii_txd_next;
+reg gmii_tx_en_reg, gmii_tx_en_next;
+reg gmii_tx_er_reg, gmii_tx_er_next;
 
-reg s_axis_tready_reg = 1'b0, s_axis_tready_next;
+reg s_axis_tready_reg, s_axis_tready_next;
 
-reg [PTP_TS_WIDTH-1:0] m_axis_ptp_ts_reg = 0, m_axis_ptp_ts_next;
-reg [PTP_TAG_WIDTH-1:0] m_axis_ptp_ts_tag_reg = 0, m_axis_ptp_ts_tag_next;
-reg m_axis_ptp_ts_valid_reg = 1'b0, m_axis_ptp_ts_valid_next;
+reg [PTP_TS_WIDTH-1:0] m_axis_ptp_ts_reg, m_axis_ptp_ts_next;
+reg [PTP_TAG_WIDTH-1:0] m_axis_ptp_ts_tag_reg, m_axis_ptp_ts_tag_next;
+reg m_axis_ptp_ts_valid_reg, m_axis_ptp_ts_valid_next;
 
-reg start_packet_reg = 1'b0, start_packet_next;
-reg error_underflow_reg = 1'b0, error_underflow_next;
+reg start_packet_reg, start_packet_next;
+reg error_underflow_reg, error_underflow_next;
 
-reg [31:0] crc_state = 32'hFFFFFFFF;
+reg [31:0] crc_state;
 wire [31:0] crc_next;
 
 assign s_axis_tready = s_axis_tready_reg;
@@ -426,6 +426,12 @@ always @(posedge clk) begin
     error_underflow_reg <= error_underflow_next;
 
     if (rst) begin
+        s_tdata_reg <= 8'd0;
+        mii_odd_reg <= 1'b0;
+        mii_msn_reg <= 4'b0;
+        m_axis_ptp_ts_reg <= '0;
+        m_axis_ptp_ts_tag_reg <= '0;
+
         state_reg <= STATE_IDLE;
 
         frame_ptr_reg <= 16'd0;
