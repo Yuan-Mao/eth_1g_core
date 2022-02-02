@@ -5,7 +5,7 @@ module rx_buffer_memory # (
     parameter  slot_p        = 2
   , parameter  data_width_p  = 64
   , localparam els_lp        = 2048
-  , localparam addr_width_lp = `BSG_SAFE_CLOG2(els_lp)
+  , localparam addr_width_lp = $clog2(els_lp)
   , localparam read_mask_width_lp = data_width_p
   , localparam size_width_lp = 16
 )
@@ -217,7 +217,7 @@ end
     logic [slot_p-1:0][data_width_p-1:0] read_data_r_lo;
 
     localparam buffer_mem_els_lp = els_lp / (data_width_p / 8);
-    localparam buffer_mem_addr_width_lp = `BSG_SAFE_CLOG2(buffer_mem_els_lp);
+    localparam buffer_mem_addr_width_lp = $clog2(buffer_mem_els_lp);
     localparam lsb_lp = $clog2(data_width_p / 8);
 genvar i;
 generate

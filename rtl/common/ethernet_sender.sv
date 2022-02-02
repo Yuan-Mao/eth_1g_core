@@ -1,6 +1,4 @@
 
-`include "bsg_defines.v"
-
 module ethernet_sender #
 (
       parameter  buf_size_p     = 2048 // byte
@@ -31,8 +29,8 @@ module ethernet_sender #
 
     , output logic [15:0]                       send_count_o
 );
-    localparam send_ptr_width_lp = `BSG_SAFE_CLOG2(buf_size_p/(send_width_p/8));
-    localparam send_ptr_offset_width_lp = `BSG_SAFE_CLOG2(send_width_p/8);
+    localparam send_ptr_width_lp = $clog2(buf_size_p/(send_width_p/8));
+    localparam send_ptr_offset_width_lp = $clog2(send_width_p/8);
 
     logic [buf_size_p/(send_width_p/8) - 1:0][send_width_p-1:0] buffer_r;
 
@@ -129,8 +127,8 @@ module ethernet_sender #
     assign tx_axis_tdata_o = read_data_r_lo;
     assign read_addr_li = (addr_width_lp)'(send_ptr_r*(send_width_p/8));
 
-    assign send_ptr_end = (send_ptr_width_lp)'((read_size_r_lo - 1) >> `BSG_SAFE_CLOG2(send_width_p/8));
-    assign send_remaining = read_size_r_lo[`BSG_SAFE_CLOG2(send_width_p/8)-1:0];
+    assign send_ptr_end = (send_ptr_width_lp)'((read_size_r_lo - 1) >> $clog2(send_width_p/8));
+    assign send_remaining = read_size_r_lo[$clog2(send_width_p/8)-1:0];
     assign last_send_f = (send_ptr_r == send_ptr_end);
 
     wire space_available = ~(tx_axis_tvalid_o & ~tx_axis_tready_i);
