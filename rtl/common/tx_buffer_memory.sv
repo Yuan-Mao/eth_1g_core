@@ -34,7 +34,6 @@ module tx_buffer_memory # (
   , input  logic [1:0]               write_op_size_i
 );
 
-    logic [data_width_p-1:0]         write_data_li;
     logic [write_mask_width_lp-1:0]  write_mask_li;
 
     logic misaligned_access;
@@ -50,7 +49,6 @@ if (data_width_p == 64) begin: p0
 
     // mask decoding & misaligned access checking
     always_comb begin
-      write_data_li = write_data_i;
       write_mask_li = '0;
       misaligned_access = 1'b0;
 
@@ -64,8 +62,7 @@ if (data_width_p == 64) begin: p0
           2'b00: begin // 1
             for(t = 0;t < 8;t = t + 1) begin
               if(write_addr_i[2:0] == t) begin
-                write_data_li = (data_width_p)'(write_data_i << 8 * t);
-                write_mask_li = (write_mask_width_lp)'(8'b1 << t);
+                write_mask_li = (write_mask_width_lp)'('b1 << t);
               end
             end
           end
@@ -74,8 +71,7 @@ if (data_width_p == 64) begin: p0
               misaligned_access = 1'b1;
             for(t = 0;t < 4;t = t + 1) begin
               if(write_addr_i[2:1] == t) begin
-                write_data_li = (data_width_p)'(write_data_i << (2 * 8 * t));
-                write_mask_li = (write_mask_width_lp)'(8'b11 << (2 * t));
+                write_mask_li = (write_mask_width_lp)'('b11 << (2 * t));
               end
             end
           end
@@ -84,15 +80,13 @@ if (data_width_p == 64) begin: p0
               misaligned_access = 1'b1;
             for(t = 0;t < 2;t = t + 1) begin
               if(write_addr_i[2] == t) begin
-                write_data_li = (data_width_p)'(write_data_i << (4 * 8 * t));
-                write_mask_li = (write_mask_width_lp)'(8'b1111 << (4 * t));
+                write_mask_li = (write_mask_width_lp)'('b1111 << (4 * t));
               end
             end
           end
           2'b11: begin // 8
             if(write_addr_i[2:0])
               misaligned_access = 1'b1;
-            write_data_li = write_data_i;
             write_mask_li = (write_mask_width_lp)'('b1111_1111);
           end
         endcase
@@ -102,7 +96,6 @@ end
 else if (data_width_p == 32) begin: p1
     // mask decoding & misaligned access checking
     always_comb begin
-      write_data_li = write_data_i;
       write_mask_li = '0;
       misaligned_access = 1'b0;
 
@@ -116,8 +109,7 @@ else if (data_width_p == 32) begin: p1
           2'b00: begin // 1
             for(t = 0;t < 4;t = t + 1) begin
               if(write_addr_i[1:0] == t) begin
-                write_data_li = (data_width_p)'(write_data_i << 8 * t);
-                write_mask_li = (write_mask_width_lp)'(8'b1 << t);
+                write_mask_li = (write_mask_width_lp)'('b1 << t);
               end
             end
           end
@@ -126,16 +118,14 @@ else if (data_width_p == 32) begin: p1
               misaligned_access = 1'b1;
             for(t = 0;t < 2;t = t + 1) begin
               if(write_addr_i[1] == t) begin
-                write_data_li = (data_width_p)'(write_data_i << (2 * 8 * t));
-                write_mask_li = (write_mask_width_lp)'(8'b11 << (2 * t));
+                write_mask_li = (write_mask_width_lp)'('b11 << (2 * t));
               end
             end
           end
           2'b10: begin // 4
             if(write_addr_i[1:0])
               misaligned_access = 1'b1;
-            write_data_li = write_data_i;
-            write_mask_li = (write_mask_width_lp)'('b0000_1111);
+            write_mask_li = (write_mask_width_lp)'('b1111);
           end
         endcase
       end
@@ -229,7 +219,7 @@ generate
          ,.v_i(v_li)
          ,.w_i(w_li)
          ,.addr_i(selected_addr_lo)
-         ,.data_i(write_data_li)
+         ,.data_i(write_data_i)
          ,.write_mask_i(write_mask_li)
          ,.data_o(read_data_r_lo[i])
         );

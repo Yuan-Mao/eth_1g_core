@@ -34,11 +34,6 @@ module rx_buffer_memory # (
   , input  logic [data_width_p-1:0]  write_data_i
 );
 
-    logic [data_width_p-1:0]         read_data_lo;
-    logic [read_mask_width_lp-1:0]   read_mask_li;
-    logic [data_width_p-1:0]         masked_read_data;
-
-    logic misaligned_access;
     logic full_o;
     logic empty_o;
 
@@ -63,81 +58,9 @@ module rx_buffer_memory # (
        ,.data_i(read_addr_i)
        ,.data_o(prev_read_addr_r)
       );
-    // Decoding logic
-if (data_width_p == 64) begin: p0
-    always_comb begin
-      read_mask_li = '0;
-      masked_read_data = '0;
 
-      read_data_o = read_data_lo;
-
-      case(prev_read_op_size_r)
-        2'b00: begin // 1
-          for(int t = 0;t < 8;t = t + 1) begin
-            if(prev_read_addr_r[2:0] == t) begin
-              read_mask_li = 64'('hff << (8 * t));
-              masked_read_data = read_data_lo & read_mask_li;
-              read_data_o = (data_width_p)'(masked_read_data >> 8 * t);
-            end
-          end
-        end
-        2'b01: begin // 2
-          for(int t = 0;t < 4;t = t + 1) begin
-            if(prev_read_addr_r[2:1] == t) begin
-              read_mask_li = 64'('hffff << (2 * 8 * t));
-              masked_read_data = read_data_lo & read_mask_li;
-              read_data_o = (data_width_p)'(masked_read_data >> (2 * 8 * t));
-            end
-          end
-        end
-        2'b10: begin // 4
-          for(int t = 0;t < 2;t = t + 1) begin
-            if(prev_read_addr_r[2] == t) begin
-              read_mask_li = 64'('hffffffff << (4 * 8 * t));
-              masked_read_data = read_data_lo & read_mask_li;
-              read_data_o = (data_width_p)'(masked_read_data >> (4 * 8 * t));
-            end
-          end
-        end
-        2'b11: begin // 8
-          read_data_o = read_data_lo;
-        end
-      endcase
-    end
-end
-else if (data_width_p == 32) begin: p1
-    always_comb begin
-      read_mask_li = '0;
-      masked_read_data = '0;
-
-      read_data_o = read_data_lo;
-
-      case(prev_read_op_size_r)
-        2'b00: begin // 1
-          for(int t = 0;t < 4;t = t + 1) begin
-            if(prev_read_addr_r[1:0] == t) begin
-              read_mask_li = 32'('hff << (8 * t));
-              masked_read_data = read_data_lo & read_mask_li;
-              read_data_o = (data_width_p)'(masked_read_data >> 8 * t);
-            end
-          end
-        end
-        2'b01: begin // 2
-          for(int t = 0;t < 2;t = t + 1) begin
-            if(prev_read_addr_r[1] == t) begin
-              read_mask_li = 32'('hffff << (2 * 8 * t));
-              masked_read_data = read_data_lo & read_mask_li;
-              read_data_o = (data_width_p)'(masked_read_data >> (2 * 8 * t));
-            end
-          end
-        end
-        2'b10: begin // 8
-          read_data_o = read_data_lo;
-        end
-      endcase
-    end
-end
     // misaligned access checking
+    logic misaligned_access;
     always_comb begin
       misaligned_access = 1'b0;
       // write
@@ -282,10 +205,11 @@ endgenerate
         ) data_mux (
           .data_i(read_data_r_lo)
          ,.sel_one_hot_i(prev_rptr_one_hot_lo)
-         ,.data_o(read_data_lo)
+         ,.data_o(read_data_o)
         );
 
     // synopsys translate_off
+
     always_ff @(negedge clk_i) begin
       if(~reset_i) begin
         assert(read_op_size_i <= $clog2(data_width_p / 8))
@@ -297,6 +221,7 @@ endgenerate
 
       end
     end
+
     // synopsys translate_on
 
 endmodule
