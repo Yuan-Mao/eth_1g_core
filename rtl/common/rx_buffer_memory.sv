@@ -45,6 +45,8 @@ module rx_buffer_memory # (
     logic [1:0]                prev_read_op_size_r;
     logic [addr_width_lp-1:0]  prev_read_addr_r;
 
+    localparam lsb_lp = $clog2(data_width_p / 8);
+
     bsg_dff_reset_en #(.width_p(2)
       ) prev_read_op_size_reg (
         .clk_i(clk_i)
@@ -114,7 +116,7 @@ else if (data_width_p == 32) begin: p1
         2'b00: begin // 1
           for(int t = 0;t < 4;t = t + 1) begin
             if(prev_read_addr_r[1:0] == t) begin
-              read_mask_li = 64'('hff << (8 * t));
+              read_mask_li = 32'('hff << (8 * t));
               masked_read_data = read_data_lo & read_mask_li;
               read_data_o = (data_width_p)'(masked_read_data >> 8 * t);
             end
@@ -123,7 +125,7 @@ else if (data_width_p == 32) begin: p1
         2'b01: begin // 2
           for(int t = 0;t < 2;t = t + 1) begin
             if(prev_read_addr_r[1] == t) begin
-              read_mask_li = 64'('hffff << (2 * 8 * t));
+              read_mask_li = 32'('hffff << (2 * 8 * t));
               masked_read_data = read_data_lo & read_mask_li;
               read_data_o = (data_width_p)'(masked_read_data >> (2 * 8 * t));
             end
@@ -139,7 +141,7 @@ end
     always_comb begin
       misaligned_access = 1'b0;
       // write
-      if(write_v_i & write_addr_i[2:0])
+      if(write_v_i && (write_addr_i[lsb_lp-1:0] != (lsb_lp)'('b0)))
         misaligned_access = 1'b1;
 
       // read
@@ -218,7 +220,6 @@ end
 
     localparam buffer_mem_els_lp = els_lp / (data_width_p / 8);
     localparam buffer_mem_addr_width_lp = $clog2(buffer_mem_els_lp);
-    localparam lsb_lp = $clog2(data_width_p / 8);
 genvar i;
 generate
     for(i = 0;i < slot_p;i = i + 1) begin: slot
