@@ -118,15 +118,14 @@ module testbench();
 
 
     task automatic send_random_packet(input [reg_addr_width_p-1:0] size);
-        logic [reg_addr_width_p-1:0] upper, lower, cur;
+        logic [reg_addr_width_p-1:0] count, cur;
         logic [axis_width_p-1:0] data_lo, value;
         logic [buf_size_p*8-1:0] packet;
         integer i, wait_cnt;
-        assert(size != 0);
-        upper = size / (axis_width_p / 8);
-        lower = size % (axis_width_p / 8);
+        assert((size % (axis_width_p / 8)) == 0);
+        count = size / (axis_width_p / 8);
         $display("Sending packet with size 0x%x:", size);
-        for(i = 0;i < (size + (axis_width_p / 8) - 1) / (axis_width_p / 8);i = i + 1) begin
+        for(i = 0;i < count;i = i + 1) begin
             value = {$urandom, $urandom};
             packet[(i * axis_width_p)+:axis_width_p] = value;
         end
@@ -145,36 +144,12 @@ module testbench();
             wait_cnt = wait_cnt + 1;
         end
         // write content
-        for(i = 0;i < upper;i = i + 1) begin
+        for(i = 0;i < count;i = i + 1) begin
             value = packet[i * axis_width_p+:axis_width_p];
             write_addr('h0800 + (i * axis_width_p / 8), (axis_width_p)'(value), 
                     $clog2(axis_width_p / 8) , 0);
             $fwrite(tx_file, "%x\n", value);
         end
-        cur = upper * (axis_width_p / 8);
-        if(lower) begin
-          for(i = $clog2(axis_width_p / 8) - 1;i >= 0;i = i - 1) begin
-            if(lower >= (1 << i)) begin
-              case(i)
-                2'b10: begin
-                  write_addr('h0800 + cur, packet[cur * 8+:32], i, 0);
-                  $fwrite(tx_file, "%x\n", packet[cur * 8+:32]);
-                end
-                2'b01: begin
-                  write_addr('h0800 + cur, packet[cur * 8+:16], i, 0);
-                  $fwrite(tx_file, "%x\n", packet[cur * 8+:16]);
-                end
-                2'b00: begin
-                  write_addr('h0800 + cur, packet[cur * 8+:8], i, 0);
-                  $fwrite(tx_file, "%x\n", packet[cur * 8+:8]);
-                end
-              endcase
-              lower = lower - (1 << i);
-              cur = cur + (1 << i);  
-            end
-          end
-        end
-        assert(lower == 0);
 
         // write size
         write_addr('h1028, size, 2'b10, 0);
@@ -248,7 +223,8 @@ module testbench();
             for(int i = 0;i < delay;i = i + 1) begin
                 clk_tick();
             end
-            size = $urandom() % 1400 + 60;
+            size = $urandom() % 1400 + 64;
+            size = size / (axis_width_p / 8) * (axis_width_p / 8);
             $display("Sending %d packet", tx_send_cnt);
             send_random_packet(size);
         end

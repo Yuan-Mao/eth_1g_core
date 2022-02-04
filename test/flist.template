@@ -7,8 +7,7 @@ $TEST_DIR/helper.cpp
 
 $COMMON_DIR/ethernet_receiver.sv
 $COMMON_DIR/ethernet_sender.sv
-$COMMON_DIR/rx_buffer_memory.sv
-$COMMON_DIR/tx_buffer_memory.sv
+$COMMON_DIR/packet_buffer.sv
 $COMMON_DIR/ethernet_controller.sv
 $COMMON_DIR/ethernet_mmio_decoder.sv
 $COMMON_DIR/interrupt_generator.sv
