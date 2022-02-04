@@ -11,4 +11,3 @@ extern "C" int get_time()
 {
     return time(NULL);
 }
-#endif
