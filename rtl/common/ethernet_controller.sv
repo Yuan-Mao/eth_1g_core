@@ -49,7 +49,6 @@ module ethernet_controller #
     logic                              buffer_write_v_lo;
 
     logic [addr_width_lp - 1:0]        buffer_read_addr_lo;
-    logic [1:0]                        buffer_read_op_size_lo;
     logic [axis_width_p-1:0]     buffer_read_data_lo;
     logic                              buffer_read_v_lo;
 
@@ -116,7 +115,6 @@ module ethernet_controller #
      ,.buffer_write_v_o(buffer_write_v_lo)
 
      ,.buffer_read_addr_o(buffer_read_addr_lo)
-     ,.buffer_read_op_size_o(buffer_read_op_size_lo)
      ,.buffer_read_v_o(buffer_read_v_lo)
      ,.buffer_read_data_r_i(buffer_read_data_lo)
 
@@ -167,7 +165,6 @@ module ethernet_controller #
      ,.buffer_write_v_i(buffer_write_v_lo)
 
      ,.buffer_read_addr_i(buffer_read_addr_lo)
-     ,.buffer_read_op_size_i(buffer_read_op_size_lo)
      ,.buffer_read_data_o(buffer_read_data_lo)
      ,.buffer_read_v_i(buffer_read_v_lo)
 

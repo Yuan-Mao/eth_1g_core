@@ -29,7 +29,6 @@ module mac_with_buffer #
     , input  logic                              buffer_write_v_i
 
     , input  logic [addr_width_lp - 1:0]        buffer_read_addr_i
-    , input  logic [1:0]                        buffer_read_op_size_i
     , output logic [axis_width_p-1:0]     buffer_read_data_o
     , input logic                               buffer_read_v_i
 
@@ -115,7 +114,6 @@ module mac_with_buffer #
        ,.ready_o(rx_ready_o)
 
        ,.buffer_read_addr_i(buffer_read_addr_i)
-       ,.buffer_read_op_size_i(buffer_read_op_size_i)
        ,.buffer_read_data_o(buffer_read_data_o)
        ,.buffer_read_v_i(buffer_read_v_i)
 

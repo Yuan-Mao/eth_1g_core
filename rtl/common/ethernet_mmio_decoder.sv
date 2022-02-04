@@ -36,7 +36,6 @@ module ethernet_mmio_decoder #
 
       // buffer_read_data_r_i does sync read
     , output logic [addr_width_lp - 1:0]        buffer_read_addr_o
-    , output logic [1:0]                        buffer_read_op_size_o
     , output logic                              buffer_read_v_o
     , input  logic [axis_width_p-1:0]     buffer_read_data_r_i
 
@@ -103,7 +102,6 @@ module ethernet_mmio_decoder #
     always_comb begin
       io_decode_error_o = 1'b0;
       buffer_read_addr_o = '0;
-      buffer_read_op_size_o = '0;
       buffer_read_v_o = 1'b0;
 
       buffer_write_addr_o = '0;
@@ -130,7 +128,6 @@ module ethernet_mmio_decoder #
             // RX buffer, r
             if(read_en_i) begin
               buffer_read_addr_o = addr_i[addr_width_lp-1:0];
-              buffer_read_op_size_o = op_size_i;
               buffer_read_v_o = 1'b1;
             end
             if(write_en_i)

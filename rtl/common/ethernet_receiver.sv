@@ -11,7 +11,6 @@ module ethernet_receiver
   , output logic                         ready_o // packet is ready to read
 
   , input logic [addr_width_lp - 1:0]    buffer_read_addr_i
-  , input logic [1:0]                    buffer_read_op_size_i
   , output logic [recv_width_p-1:0]      buffer_read_data_o
   , input logic                          buffer_read_v_i
 
@@ -34,7 +33,6 @@ module ethernet_receiver
   logic                     read_v_li;
   logic [addr_width_lp-1:0] read_addr_li;
   logic [recv_width_p-1:0]read_data_lo;
-  logic [1:0]               read_op_size_li;
 
   logic                     write_slot_v_li;
   logic                     write_slot_ready_and_lo;
@@ -107,20 +105,21 @@ end
 
   assign ready_o = read_slot_v_lo;
 
-  rx_buffer_memory #(.slot_p(2)
+  packet_buffer #(.slot_p(2)
      ,.data_width_p(recv_width_p))
-    rx_buffer_memory (
+    rx_buffer (
       .clk_i(clk_i)
      ,.reset_i(reset_i)
 
+     // PL side
      ,.read_slot_v_o(read_slot_v_lo)
      ,.read_slot_ready_and_i(read_slot_ready_and_li)
-     ,.read_size_r_o(read_size_r_lo) // valid when read_slot_v_o == 1'b1
+     ,.read_size_r_o(read_size_r_lo)
      ,.read_v_i(read_v_li)
      ,.read_addr_i(read_addr_li)
      ,.read_data_o(read_data_lo)
-     ,.read_op_size_i(read_op_size_li)
 
+     // MAC side (write width is always recv_width_p)
      ,.write_slot_v_i(write_slot_v_li)
      ,.write_slot_ready_and_o(write_slot_ready_and_lo)
 
@@ -130,7 +129,7 @@ end
      ,.write_v_i(write_v_li)
      ,.write_addr_i(write_addr_li)
      ,.write_data_i(write_data_li)
-
+     ,.write_op_size_i($clog2(recv_width_p >> 3))
     );
   bsg_flow_counter #(.els_p((1 << 16) - 1)
   ) receive_count (
@@ -149,7 +148,6 @@ end
     read_v_li = 1'b0;
     read_addr_li = buffer_read_addr_i;
     buffer_read_data_o = read_data_lo;
-    read_op_size_li = buffer_read_op_size_i;
     if(read_slot_v_lo) begin
       rx_packet_size_o = read_size_r_lo;
       read_slot_ready_and_li = clear_buffer_i;

@@ -49,7 +49,7 @@ module ethernet_sender #
     logic [15:0]               read_size_r_lo; // valid when read_slot_v_o == 1'b1
     logic                      read_v_li;
     logic [addr_width_lp-1:0]  read_addr_li;
-    logic [send_width_p-1:0]   read_data_r_lo;
+    logic [send_width_p-1:0]   read_data_lo;
 
     logic send_ptr_increment;
     logic send_complete;
@@ -65,21 +65,21 @@ module ethernet_sender #
     logic write_v_li;
     logic write_slot_v_li;
 
-    tx_buffer_memory #(.slot_p(2)
+    packet_buffer #(.slot_p(2)
        ,.data_width_p(send_width_p))
-      tx_buffer_memory (
+      tx_buffer (
         .clk_i(clk_i)
        ,.reset_i(reset_i)
 
-    // MAC side (read width is always data_width_lp)
+       // MAC side (read width is always send_width_p)
        ,.read_slot_v_o(read_slot_v_lo)
        ,.read_slot_ready_and_i(read_slot_ready_and_li)
        ,.read_size_r_o(read_size_r_lo) // valid when read_slot_v_o == 1'b1
        ,.read_v_i(read_v_li)
        ,.read_addr_i(read_addr_li)
-       ,.read_data_r_o(read_data_r_lo)
+       ,.read_data_o(read_data_lo)
 
-    // PL side
+       // PL side
        ,.write_slot_v_i(write_slot_v_li)
        ,.write_slot_ready_and_o(write_slot_ready_and_lo)
 
@@ -124,7 +124,7 @@ module ethernet_sender #
        ,.count_o(send_ptr_r)
       );
 
-    assign tx_axis_tdata_o = read_data_r_lo;
+    assign tx_axis_tdata_o = read_data_lo;
     assign read_addr_li = (addr_width_lp)'(send_ptr_r*(send_width_p/8));
 
     assign send_ptr_end = (send_ptr_width_lp)'((read_size_r_lo - 1) >> $clog2(send_width_p/8));
