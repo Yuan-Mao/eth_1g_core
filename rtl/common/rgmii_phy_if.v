@@ -34,9 +34,10 @@ module rgmii_phy_if #
     parameter PLATFORM = "SIM"
 )
 (
-    input  wire        clk,
-    input  wire        clk250_i,
-    input  wire        rst,
+    input  wire        clk250,
+    input  wire        clk250_rst,
+    output wire        gtx_clk,
+    output wire        gtx_rst,
 
     /*
      * GMII interface to MAC
@@ -99,8 +100,8 @@ reg rgmii_tx_clk_fall;
 
 reg [5:0] count_reg, count_next;
 
-always @(posedge clk) begin
-    if (rst) begin
+always @(posedge gtx_clk) begin
+    if (gtx_rst) begin
         rgmii_tx_clk_1 <= 1'b1;
         rgmii_tx_clk_2 <= 1'b0;
         rgmii_tx_clk_rise <= 1'b1;
@@ -190,31 +191,29 @@ always @* begin
     end
 end
 
-wire phy_rgmii_tx_clk_int;
+gtx_clk_and_phy_tx_clk_generator
+ gtx_clk_and_phy_tx_clk_gen
+  (.clk250_i(clk250)
+   ,.clk250_rst_i(clk250_rst)
 
-oddr_clock_downsample
-  oddr_clock_downsample_inst (
-    .reset_i(rst)
-    ,.clk_i(clk250_i)
-    ,.clk_setting_i({rgmii_tx_clk_2, rgmii_tx_clk_1})
-    ,.ready_o(/* UNUSED */)
-    ,.clk_r_o(phy_rgmii_tx_clk_int)
-  );
+   ,.phy_rgmii_tx_clk_setting_i({rgmii_tx_clk_2, rgmii_tx_clk_1})
+   ,.phy_rgmii_tx_clk_o(phy_rgmii_tx_clk)
+
+   ,.gtx_clk_r_o(gtx_clk)
+   ,.gtx_rst_r_o(gtx_rst));
 
 bsg_link_oddr_phy #(.width_p(5))
-  data_oddr_inst (
-    .reset_i(rst)
-    ,.clk_i(clk250_i)
-    ,.data_i({{rgmii_txd_2, rgmii_tx_ctl_2}, {rgmii_txd_1, rgmii_tx_ctl_1}})
-    ,.ready_o(/* UNUSED */)
+ data_oddr_inst
+  (.reset_i(clk250_rst)
+   ,.clk_i(clk250)
+   ,.data_i({{rgmii_txd_2, rgmii_tx_ctl_2}, {rgmii_txd_1, rgmii_tx_ctl_1}})
+   ,.ready_o(/* UNUSED */)
 
-    ,.data_r_o({phy_rgmii_txd, phy_rgmii_tx_ctl})
-    ,.clk_r_o(/* UNUSED */)
+   ,.data_r_o({phy_rgmii_txd, phy_rgmii_tx_ctl})
+   ,.clk_r_o(/* UNUSED */)
   );
 
-assign phy_rgmii_tx_clk = phy_rgmii_tx_clk_int;
-
-assign mac_gmii_tx_clk = clk;
+assign mac_gmii_tx_clk = gtx_clk;
 
 assign mac_gmii_tx_clk_en = gmii_clk_en;
 
@@ -222,8 +221,8 @@ assign mac_gmii_tx_clk_en = gmii_clk_en;
 reg [3:0] tx_rst_reg;
 assign mac_gmii_tx_rst = tx_rst_reg[0];
 
-always @(posedge mac_gmii_tx_clk or posedge rst) begin
-    if (rst) begin
+always @(posedge mac_gmii_tx_clk or posedge gtx_rst) begin
+    if (gtx_rst) begin
         tx_rst_reg <= 4'hf;
     end else begin
         tx_rst_reg <= {1'b0, tx_rst_reg[3:1]};
@@ -233,8 +232,8 @@ end
 reg [3:0] rx_rst_reg;
 assign mac_gmii_rx_rst = rx_rst_reg[0];
 
-always @(posedge mac_gmii_rx_clk or posedge rst) begin
-    if (rst) begin
+always @(posedge mac_gmii_rx_clk or posedge gtx_rst) begin
+    if (gtx_rst) begin
         rx_rst_reg <= 4'hf;
     end else begin
         rx_rst_reg <= {1'b0, rx_rst_reg[3:1]};

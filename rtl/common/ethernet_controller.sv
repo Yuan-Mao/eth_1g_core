@@ -12,7 +12,7 @@ module ethernet_controller #
     , input  logic                    reset_i
     , input  logic                    clk250_i
     , input  logic                    reset_clk250_i
-    , output logic                    reset_clk250_late_o
+    , output logic                    reset_clk125_o
 
     , input  logic [15:0]             addr_i
     , input  logic                    write_en_i
@@ -149,7 +149,7 @@ module ethernet_controller #
    ,.reset_i(reset_i)
    ,.clk250_i(clk250_i)
    ,.reset_clk250_i(reset_clk250_i)
-   ,.reset_clk250_late_o(reset_clk250_late_o)
+   ,.reset_clk125_o(reset_clk125_o)
 
    ,.send_i(send_lo)
    ,.tx_ready_o(tx_ready_lo)

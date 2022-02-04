@@ -12,7 +12,7 @@ module mac_with_buffer #
     , input  logic        reset_i
     , input  logic        clk250_i
     , input  logic        reset_clk250_i
-    , output logic        reset_clk250_late_o
+    , output logic        reset_clk125_o
 
     , input  logic        send_i
     , output logic        tx_ready_o
@@ -132,9 +132,9 @@ module mac_with_buffer #
     eth_mac_1g_rgmii_fifo #(.AXIS_DATA_WIDTH(axis_width_p)
         ,.PLATFORM(PLATFORM))
           mac (
-        .gtx_clk250(clk250_i)
-       ,.gtx_rst(reset_clk250_i)
-       ,.gtx_rst_late(reset_clk250_late_o)
+        .clk250(clk250_i)
+       ,.clk250_rst(reset_clk250_i)
+       ,.gtx_rst(reset_clk125_o)
        ,.logic_clk(clk_i)
        ,.logic_rst(reset_i)
 

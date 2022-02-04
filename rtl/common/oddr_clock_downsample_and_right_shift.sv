@@ -1,8 +1,5 @@
 
-
-`include "bsg_defines.v"
-
-module oddr_clock_downsample
+module oddr_clock_downsample_and_right_shift
   (// reset, data and ready signals synchronous to clk_i
    // no valid signal required (assume valid_i is constant 1)
    input                      reset_i
@@ -13,7 +10,7 @@ module oddr_clock_downsample
   ,output logic               clk_r_o
   );
 
-  logic odd_r, clk_r, reset_i_r;
+  logic odd_r;
   logic [1:0] clk_setting_r;
   logic       clk_setting_r_2;
 
@@ -42,5 +39,3 @@ module oddr_clock_downsample
     clk_r_o <= clk_setting_r_2;
 
 endmodule
-
-`BSG_ABSTRACT_MODULE(oddr_clock_downsample)

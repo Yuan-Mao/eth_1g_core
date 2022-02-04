@@ -36,9 +36,9 @@ module eth_mac_1g_rgmii #
     parameter MIN_FRAME_LENGTH = 64
 )
 (
-    input  wire        gtx_clk,
-    input  wire        gtx_clk250,
-    input  wire        gtx_rst,
+    input  wire        clk250,
+    input  wire        clk250_rst,
+    output wire        gtx_rst,
     output wire        rx_clk,
     output wire        rx_rst,
     output wire        tx_clk,
@@ -84,6 +84,9 @@ module eth_mac_1g_rgmii #
      */
     input  wire [7:0]  ifg_delay
 );
+
+wire gtx_clk;
+wire gtx_rst;
 
 wire [7:0]  mac_gmii_rxd;
 wire        mac_gmii_rx_dv;
@@ -174,9 +177,10 @@ rgmii_phy_if #(
     .PLATFORM(PLATFORM)
 )
 rgmii_phy_if_inst (
-    .clk(gtx_clk),
-    .clk250_i(gtx_clk250),
-    .rst(gtx_rst),
+    .clk250(clk250),
+    .clk250_rst(clk250_rst),
+    .gtx_clk(gtx_clk),
+    .gtx_rst(gtx_rst),
 
     .mac_gmii_rx_clk(rx_clk),
     .mac_gmii_rx_rst(rx_rst),

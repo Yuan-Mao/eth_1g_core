@@ -8,6 +8,7 @@ module ethernet_controller_wrapper #
       input  logic                          clk_i
     , input  logic                          reset_i
     , input  logic                          clk250_i
+    , output logic                          reset_clk125_o
     // zynq-7000 specific: 200 MHZ for IDELAY tap value
     , input  logic                          iodelay_ref_clk_i
 
@@ -65,7 +66,7 @@ module ethernet_controller_wrapper #
     ,.reset_i
     ,.clk250_i
     ,.reset_clk250_i(reset_clk250_li)
-    ,.reset_clk250_late_o(/* UNUSED */)
+    ,.reset_clk125_o(reset_clk125_o)
 
     ,.addr_i
     ,.write_en_i
