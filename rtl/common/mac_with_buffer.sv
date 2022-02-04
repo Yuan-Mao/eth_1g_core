@@ -3,7 +3,7 @@ module mac_with_buffer #
 (
       parameter  PLATFORM             = "SIM"
     , parameter  buf_size_p           = 2048 // byte
-    , parameter  axis_width_p         = 64 
+    , parameter  axis_width_p         = 64
     , localparam packet_size_width_lp = $clog2(buf_size_p) + 1
     , localparam addr_width_lp        = $clog2(buf_size_p)
 )
@@ -59,7 +59,7 @@ module mac_with_buffer #
     , output logic [1:0]  speed_o
 );
 
-                                            
+
     logic [axis_width_p-1:0] tx_axis_tdata_lo;
     logic  [axis_width_p/8-1:0] tx_axis_tkeep_lo;
     logic        tx_axis_tvalid_lo;
@@ -87,12 +87,12 @@ module mac_with_buffer #
 
         ,.packet_size_v_i(tx_packet_size_v_i)
         ,.packet_size_i(tx_packet_size_i)
-                                  
+
         ,.buffer_write_addr_i(buffer_write_addr_i)
         ,.buffer_write_op_size_i(buffer_write_op_size_i)
         ,.buffer_write_data_i(buffer_write_data_i)
         ,.buffer_write_v_i(buffer_write_v_i)
-                      
+
         ,.tx_axis_tdata_o(tx_axis_tdata_lo)
         ,.tx_axis_tkeep_o(tx_axis_tkeep_lo)
         ,.tx_axis_tvalid_o(tx_axis_tvalid_lo)
@@ -118,7 +118,7 @@ module mac_with_buffer #
        ,.buffer_read_v_i(buffer_read_v_i)
 
        ,.rx_packet_size_o(rx_packet_size_o)
-                        
+
        ,.rx_axis_tdata_i(rx_axis_tdata_li)
        ,.rx_axis_tkeep_i(rx_axis_tkeep_li)
        ,.rx_axis_tvalid_i(rx_axis_tvalid_li)

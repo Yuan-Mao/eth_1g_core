@@ -1,29 +1,29 @@
 module ethernet_receiver
 #(
-    parameter  recv_width_p = 64  // byte
-  , parameter  buf_size_p = 2048 // byte
-  , localparam addr_width_lp = $clog2(buf_size_p)
+      parameter  recv_width_p = 64  // byte
+    , parameter  buf_size_p = 2048 // byte
+    , localparam addr_width_lp = $clog2(buf_size_p)
 )
 (
-    input logic                          clk_i
-  , input logic                          reset_i
-  , input logic                          clear_buffer_i
-  , output logic                         ready_o // packet is ready to read
+      input logic                          clk_i
+    , input logic                          reset_i
+    , input logic                          clear_buffer_i
+    , output logic                         ready_o // packet is ready to read
 
-  , input logic [addr_width_lp - 1:0]    buffer_read_addr_i
-  , output logic [recv_width_p-1:0]      buffer_read_data_o
-  , input logic                          buffer_read_v_i
+    , input logic [addr_width_lp - 1:0]    buffer_read_addr_i
+    , output logic [recv_width_p-1:0]      buffer_read_data_o
+    , input logic                          buffer_read_v_i
 
-  , output logic [15:0]                  rx_packet_size_o
+    , output logic [15:0]                  rx_packet_size_o
 
-  , input logic [recv_width_p-1:0]       rx_axis_tdata_i
-  , input logic [recv_width_p/8-1:0]     rx_axis_tkeep_i
-  , input logic                          rx_axis_tvalid_i
-  , output logic                         rx_axis_tready_o
-  , input logic                          rx_axis_tlast_i
-  , input logic                          rx_axis_tuser_i
+    , input logic [recv_width_p-1:0]       rx_axis_tdata_i
+    , input logic [recv_width_p/8-1:0]     rx_axis_tkeep_i
+    , input logic                          rx_axis_tvalid_i
+    , output logic                         rx_axis_tready_o
+    , input logic                          rx_axis_tlast_i
+    , input logic                          rx_axis_tuser_i
 
-  , output logic [15:0]                  receive_count_o
+    , output logic [15:0]                  receive_count_o
 );
   localparam recv_ptr_width_lp = $clog2(buf_size_p/(recv_width_p/8));
 
@@ -89,7 +89,6 @@ else if(recv_width_p == 32) begin
         packet_size_remaining = 16'd1;
     endcase
   end
-
 end
 
   bsg_counter_clear_up #( // unit: 'recv_width_p/8' byte
@@ -131,8 +130,8 @@ end
      ,.write_data_i(write_data_li)
      ,.write_op_size_i($clog2(recv_width_p >> 3))
     );
-  bsg_flow_counter #(.els_p((1 << 16) - 1)
-  ) receive_count (
+  bsg_flow_counter #(.els_p((1 << 16) - 1))
+   receive_count (
     .clk_i(clk_i)
    ,.reset_i(reset_i)
    ,.v_i(receive_complete)

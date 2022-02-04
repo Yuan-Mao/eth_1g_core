@@ -207,7 +207,7 @@ bsg_link_oddr_phy #(.width_p(5))
     ,.clk_i(clk250_i)
     ,.data_i({{rgmii_txd_2, rgmii_tx_ctl_2}, {rgmii_txd_1, rgmii_tx_ctl_1}})
     ,.ready_o(/* UNUSED */)
-              
+
     ,.data_r_o({phy_rgmii_txd, phy_rgmii_tx_ctl})
     ,.clk_r_o(/* UNUSED */)
   );

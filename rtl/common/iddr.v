@@ -75,10 +75,12 @@ if (TARGET == "XILINX") begin
     for (n = 0; n < WIDTH; n = n + 1) begin : iddr
         if (IODDR_STYLE == "IODDR") begin
             if (PLATFORM == "ZEDBOARD") begin
+                // We need this to meet the timing
+                //   requirement for RX side of the RGMII signals
                 IDELAYE2 #(
                     .DELAY_SRC("IDATAIN")
                    ,.IDELAY_TYPE("FIXED")
-                   ,.IDELAY_VALUE(7) // 13
+                   ,.IDELAY_VALUE(7)
                    ,.REFCLK_FREQUENCY(200.0)
                    ,.SIGNAL_PATTERN("DATA")
                 ) idelay2_inst (
