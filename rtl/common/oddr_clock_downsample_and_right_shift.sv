@@ -2,8 +2,8 @@
 module oddr_clock_downsample_and_right_shift
   (// reset, data and ready signals synchronous to clk_i
    // no valid signal required (assume valid_i is constant 1)
-   input                      reset_i
-  ,input                      clk_i
+   input                      clk_i
+  ,input                      reset_i
   ,input [1:0]                clk_setting_i
   ,output                     ready_o
    // output clock and data

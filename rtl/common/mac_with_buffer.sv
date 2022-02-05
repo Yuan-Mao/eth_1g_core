@@ -25,11 +25,11 @@ module mac_with_buffer #
 
     , input  logic [addr_width_lp - 1:0]        buffer_write_addr_i
     , input  logic [1:0]                        buffer_write_op_size_i
-    , input  logic [axis_width_p-1:0]      buffer_write_data_i
+    , input  logic [axis_width_p-1:0]           buffer_write_data_i
     , input  logic                              buffer_write_v_i
 
     , input  logic [addr_width_lp - 1:0]        buffer_read_addr_i
-    , output logic [axis_width_p-1:0]     buffer_read_data_o
+    , output logic [axis_width_p-1:0]           buffer_read_data_o
     , input logic                               buffer_read_v_i
 
     , output logic [15:0]                       rx_packet_size_o
