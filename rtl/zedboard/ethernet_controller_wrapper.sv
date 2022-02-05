@@ -38,17 +38,18 @@ module ethernet_controller_wrapper #
       ,.data_i(reset_i)
       ,.data_o(reset_r_lo)
       );
+if (PLATFORM == "ZEDBOARD") begin
   iodelay_control iodelay_control(
     .clk_i(clk_i)
     ,.reset_r_i(reset_r_lo)
     ,.iodelay_ref_clk_i
   );
+end
 
   (* ASYNC_REG = "TRUE", SHREG_EXTRACT = "NO" *)
   logic [3:0] reset_clk250_sync_r;
 
   // reset sync logic for clk250
-  logic reset_clk250_late_o; // UNUSED
   always @(posedge clk250_i or posedge reset_r_lo) begin
     if(reset_r_lo)
       reset_clk250_sync_r <= '1;

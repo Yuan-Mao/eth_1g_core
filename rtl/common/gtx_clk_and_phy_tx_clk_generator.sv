@@ -1,3 +1,6 @@
+
+`include "bsg_defines.v"
+
 module gtx_clk_and_phy_tx_clk_generator
 (
       input  logic       clk250_i

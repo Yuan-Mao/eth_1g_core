@@ -1,4 +1,3 @@
-`include "bp_zynq_pl.vh"
 
 module iodelay_control(
       input logic clk_i
@@ -6,7 +5,6 @@ module iodelay_control(
     , input logic iodelay_ref_clk_i
 );
 
-`ifdef FPGA
   (* ASYNC_REG = "TRUE", SHREG_EXTRACT = "NO" *)
   logic [3:0] reset_iodelay_sync_r;
 
@@ -14,10 +12,6 @@ module iodelay_control(
     .I(iodelay_ref_clk_i)
    ,.O(iodelay_ref_clk_lo)
   );
-`else
-  logic [3:0] reset_iodelay_sync_r;
-  assign iodelay_ref_clk_lo = iodelay_ref_clk_i;
-`endif
 
   logic reset_iodelay_li;
 
@@ -56,11 +50,9 @@ module iodelay_control(
     ,.data_o(reset_iodelay_hold_r)
     );
 
-`ifdef FPGA
   IDELAYCTRL idelayctrl_inst (
     .RDY(/* UNUSED */)
     ,.REFCLK(iodelay_ref_clk_lo)
     ,.RST(reset_iodelay_hold_r) // active-high reset
     );
-`endif
 endmodule
