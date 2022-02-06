@@ -1,11 +1,14 @@
 
+`include "bsg_defines.v"
+
 module mac_with_buffer #
 (
       parameter  PLATFORM             = "SIM"
-    , parameter  buf_size_p           = 2048 // byte
-    , parameter  axis_width_p         = 64
-    , localparam packet_size_width_lp = $clog2(buf_size_p) + 1
-    , localparam addr_width_lp        = $clog2(buf_size_p)
+    , parameter  eth_mtu_p            = 2048 // byte
+    , parameter  data_width_p         = 32
+    , localparam size_width_lp = `BSG_WIDTH(`BSG_SAFE_CLOG2(data_width_p/8))
+    , localparam addr_width_lp        = $clog2(eth_mtu_p)
+    , localparam packet_size_width_lp = $clog2(eth_mtu_p+1)
 )
 (
       input  logic        clk_i
@@ -14,25 +17,23 @@ module mac_with_buffer #
     , input  logic        reset_clk250_i
     , output logic        reset_clk125_o
 
-    , input  logic        send_i
-    , output logic        tx_ready_o
-    , input  logic        clear_buffer_i
-    , output logic        rx_ready_o
+    // Write side
+    , input  logic                            packet_send_i
+    , output logic                            packet_req_o
+    , input  logic                            packet_wsize_valid_i
+    , input  logic [packet_size_width_lp-1:0] packet_wsize_i
+    , input  logic                            packet_wvalid_i
+    , input  logic [addr_width_lp-1:0]        packet_waddr_i
+    , input  logic [data_width_p-1:0]         packet_wdata_i
+    , input  logic [size_width_lp-1:0]        packet_wdata_size_i
 
-
-    , input  logic                              tx_packet_size_v_i
-    , input  logic [packet_size_width_lp - 1:0] tx_packet_size_i
-
-    , input  logic [addr_width_lp - 1:0]        buffer_write_addr_i
-    , input  logic [1:0]                        buffer_write_op_size_i
-    , input  logic [axis_width_p-1:0]           buffer_write_data_i
-    , input  logic                              buffer_write_v_i
-
-    , input  logic [addr_width_lp - 1:0]        buffer_read_addr_i
-    , output logic [axis_width_p-1:0]           buffer_read_data_o
-    , input logic                               buffer_read_v_i
-
-    , output logic [15:0]                       rx_packet_size_o
+    // Read side
+    , input  logic                            packet_ack_i
+    , output logic                            packet_avail_o
+    , input  logic                            packet_rvalid_i
+    , input  logic [addr_width_lp-1:0]        packet_raddr_i
+    , output logic [data_width_p-1:0]         packet_rdata_o
+    , output logic [packet_size_width_lp-1:0] packet_rsize_o
 
     , input  logic        rgmii_rx_clk_i
     , input  logic [3:0]  rgmii_rxd_i
@@ -42,7 +43,6 @@ module mac_with_buffer #
     , output logic        rgmii_tx_ctl_o
 
     /* Status */
-
     , output logic        tx_error_underflow_o
     , output logic        tx_fifo_overflow_o
     , output logic        tx_fifo_bad_frame_o
@@ -60,38 +60,36 @@ module mac_with_buffer #
 );
 
 
-    logic [axis_width_p-1:0] tx_axis_tdata_lo;
-    logic  [axis_width_p/8-1:0] tx_axis_tkeep_lo;
-    logic        tx_axis_tvalid_lo;
-    logic        tx_axis_tlast_lo;
-    logic        tx_axis_tready_li;
-    logic        tx_axis_tuser_lo;
+    logic [data_width_p-1:0]   tx_axis_tdata_lo;
+    logic [data_width_p/8-1:0] tx_axis_tkeep_lo;
+    logic                      tx_axis_tvalid_lo;
+    logic                      tx_axis_tlast_lo;
+    logic                      tx_axis_tready_li;
+    logic                      tx_axis_tuser_lo;
 
-    logic [axis_width_p-1:0] rx_axis_tdata_li;
-    logic  [axis_width_p/8-1:0] rx_axis_tkeep_li;
-    logic        rx_axis_tvalid_li;
-    logic        rx_axis_tready_lo;
-    logic        rx_axis_tlast_li;
-    logic        rx_axis_tuser_li;
-
+    logic [data_width_p-1:0]   rx_axis_tdata_li;
+    logic [data_width_p/8-1:0] rx_axis_tkeep_li;
+    logic                      rx_axis_tvalid_li;
+    logic                      rx_axis_tready_lo;
+    logic                      rx_axis_tlast_li;
+    logic                      rx_axis_tuser_li;
 
     ethernet_sender #(
-        .buf_size_p(buf_size_p)
-        ,.send_width_p(axis_width_p)
-    )
-    sender (
+         .data_width_p(data_width_p)
+        ,.eth_mtu_p(eth_mtu_p))
+     sender (
          .clk_i(clk_i)
         ,.reset_i(reset_i)
-        ,.send_i(send_i)
-        ,.ready_o(tx_ready_o)
 
-        ,.packet_size_v_i(tx_packet_size_v_i)
-        ,.packet_size_i(tx_packet_size_i)
+        ,.packet_send_i
+        ,.packet_req_o
 
-        ,.buffer_write_addr_i(buffer_write_addr_i)
-        ,.buffer_write_op_size_i(buffer_write_op_size_i)
-        ,.buffer_write_data_i(buffer_write_data_i)
-        ,.buffer_write_v_i(buffer_write_v_i)
+        ,.packet_wsize_valid_i
+        ,.packet_wsize_i
+        ,.packet_wvalid_i
+        ,.packet_waddr_i
+        ,.packet_wdata_i
+        ,.packet_wdata_size_i
 
         ,.tx_axis_tdata_o(tx_axis_tdata_lo)
         ,.tx_axis_tkeep_o(tx_axis_tkeep_lo)
@@ -104,20 +102,18 @@ module mac_with_buffer #
     );
 
     ethernet_receiver #(
-        .buf_size_p(buf_size_p)
-       ,.recv_width_p(axis_width_p)
-    )
-    receiver (
+        .data_width_p(data_width_p)
+       ,.eth_mtu_p(eth_mtu_p))
+     receiver (
         .clk_i(clk_i)
        ,.reset_i(reset_i)
-       ,.clear_buffer_i(clear_buffer_i)
-       ,.ready_o(rx_ready_o)
 
-       ,.buffer_read_addr_i(buffer_read_addr_i)
-       ,.buffer_read_data_o(buffer_read_data_o)
-       ,.buffer_read_v_i(buffer_read_v_i)
-
-       ,.rx_packet_size_o(rx_packet_size_o)
+       ,.packet_ack_i
+       ,.packet_avail_o
+       ,.packet_rvalid_i
+       ,.packet_raddr_i
+       ,.packet_rdata_o
+       ,.packet_rsize_o
 
        ,.rx_axis_tdata_i(rx_axis_tdata_li)
        ,.rx_axis_tkeep_i(rx_axis_tkeep_li)
@@ -129,7 +125,7 @@ module mac_with_buffer #
        ,.receive_count_o(receive_count_o)
     );
 
-    eth_mac_1g_rgmii_fifo #(.AXIS_DATA_WIDTH(axis_width_p)
+    eth_mac_1g_rgmii_fifo #(.AXIS_DATA_WIDTH(data_width_p)
         ,.PLATFORM(PLATFORM))
           mac (
         .clk250(clk250_i)

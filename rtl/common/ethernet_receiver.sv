@@ -1,136 +1,68 @@
+
+/*
+ * This module receives packets from axis bus and stores them in its buffer.
+ * Received packets can be read through packet_* signals.
+ *
+ */
+
 module ethernet_receiver
 #(
-      parameter  recv_width_p = 64  // byte
-    , parameter  buf_size_p = 2048 // byte
-    , localparam addr_width_lp = $clog2(buf_size_p)
+      parameter  data_width_p  = 64
+      // maximum size of an Ethernet packet
+    , parameter  eth_mtu_p  = 2048 // byte
+    , parameter  recv_count_p  = (32'b1 << 16 - 1)
+    , localparam addr_width_lp = $clog2(eth_mtu_p)
+    , localparam packet_size_width_lp = $clog2(eth_mtu_p+1)
 )
 (
-      input logic                          clk_i
-    , input logic                          reset_i
-    , input logic                          clear_buffer_i
-    , output logic                         ready_o // packet is ready to read
+      input logic                             clk_i
+    , input logic                             reset_i
 
-    , input logic [addr_width_lp - 1:0]    buffer_read_addr_i
-    , output logic [recv_width_p-1:0]      buffer_read_data_o
-    , input logic                          buffer_read_v_i
+    // Host <- Packet
+    , input logic                             packet_ack_i   // clear packet
+    , output logic                            packet_avail_o // packet is ready to read
+    , input logic                             packet_rvalid_i
+    , input logic  [addr_width_lp-1:0]        packet_raddr_i
+    , output logic [data_width_p-1:0]         packet_rdata_o // sync read
+    , output logic [packet_size_width_lp-1:0] packet_rsize_o
 
-    , output logic [15:0]                  rx_packet_size_o
+    // Packet <- AXIS
+    , input logic [data_width_p-1:0]          rx_axis_tdata_i
+    , input logic [data_width_p/8-1:0]        rx_axis_tkeep_i
+    , input logic                             rx_axis_tvalid_i
+    , output logic                            rx_axis_tready_o
+    , input logic                             rx_axis_tlast_i
+    , input logic                             rx_axis_tuser_i
 
-    , input logic [recv_width_p-1:0]       rx_axis_tdata_i
-    , input logic [recv_width_p/8-1:0]     rx_axis_tkeep_i
-    , input logic                          rx_axis_tvalid_i
-    , output logic                         rx_axis_tready_o
-    , input logic                          rx_axis_tlast_i
-    , input logic                          rx_axis_tuser_i
-
-    , output logic [15:0]                  receive_count_o
+    // stat
+    , output logic [$clog2(recv_count_p+1)-1:0] receive_count_o
 );
-  localparam recv_ptr_width_lp = $clog2(buf_size_p/(recv_width_p/8));
+  localparam recv_ptr_width_lp = $clog2(eth_mtu_p/(data_width_p/8));
 
-  logic                     read_slot_v_lo;
-  logic                     read_slot_ready_and_li;
-  logic [15:0]              read_size_r_lo; // valid when read_slot_v_o == 1'b1
-  logic                     read_v_li;
-  logic [addr_width_lp-1:0] read_addr_li;
-  logic [recv_width_p-1:0]read_data_lo;
+  logic                     packet_avail_lo;
+  logic                     packet_ack_li;
+  logic [packet_size_width_lp-1:0] packet_rsize_lo;
+  logic                     packet_rvalid_li;
+  logic [addr_width_lp-1:0] packet_raddr_li;
+  logic [data_width_p-1:0]  packet_rdata_lo;
 
-  logic                     write_slot_v_li;
-  logic                     write_slot_ready_and_lo;
+  logic                     packet_send_li;
+  logic                     packet_req_lo;
 
-  logic                     write_size_v_li;
-  logic [15:0]              write_size_li;
+  logic                     packet_wsize_valid_li;
+  logic [packet_size_width_lp-1:0] packet_wsize_li;
 
-  logic                     write_v_li;
-  logic [addr_width_lp-1:0] write_addr_li;
-  logic [recv_width_p-1:0] write_data_li;
+  logic                     packet_wvalid_li;
+  logic [addr_width_lp-1:0] packet_waddr_li;
+  logic [data_width_p-1:0]  packet_wdata_li;
 
   logic recv_ptr_unwind;
   logic recv_ptr_increment;
   logic [recv_ptr_width_lp-1:0] recv_ptr_r;
+  logic [packet_size_width_lp-1:0] packet_size_remaining;
+
   logic receive_complete;
-
-  logic [15:0] packet_size_remaining;
-
-
-if(recv_width_p == 64) begin
-  always_comb begin
-    packet_size_remaining = 16'd0;
-    case(rx_axis_tkeep_i)
-      8'b1111_1111:
-        packet_size_remaining = 16'd8;
-      8'b0111_1111:
-        packet_size_remaining = 16'd7;
-      8'b0011_1111:
-        packet_size_remaining = 16'd6;
-      8'b0001_1111:
-        packet_size_remaining = 16'd5;
-      8'b0000_1111:
-        packet_size_remaining = 16'd4;
-      8'b0000_0111:
-        packet_size_remaining = 16'd3;
-      8'b0000_0011:
-        packet_size_remaining = 16'd2;
-      8'b0000_0001:
-        packet_size_remaining = 16'd1;
-    endcase
-  end
-end
-else if(recv_width_p == 32) begin
-  always_comb begin
-    packet_size_remaining = 16'd0;
-    case(rx_axis_tkeep_i)
-      4'b1111:
-        packet_size_remaining = 16'd4;
-      4'b0111:
-        packet_size_remaining = 16'd3;
-      4'b0011:
-        packet_size_remaining = 16'd2;
-      4'b0001:
-        packet_size_remaining = 16'd1;
-    endcase
-  end
-end
-
-  bsg_counter_clear_up #( // unit: 'recv_width_p/8' byte
-      .max_val_p(buf_size_p/(recv_width_p/8)-1)
-     ,.init_val_p(0)
-    ) recv_counter (
-      .clk_i(clk_i)
-     ,.reset_i(reset_i)
-     ,.clear_i(recv_ptr_unwind)
-     ,.up_i(recv_ptr_increment)
-     ,.count_o(recv_ptr_r)
-    );
-
-  assign ready_o = read_slot_v_lo;
-
-  packet_buffer #(.slot_p(2)
-     ,.data_width_p(recv_width_p))
-    rx_buffer (
-      .clk_i(clk_i)
-     ,.reset_i(reset_i)
-
-     // PL side
-     ,.read_slot_v_o(read_slot_v_lo)
-     ,.read_slot_ready_and_i(read_slot_ready_and_li)
-     ,.read_size_r_o(read_size_r_lo)
-     ,.read_v_i(read_v_li)
-     ,.read_addr_i(read_addr_li)
-     ,.read_data_o(read_data_lo)
-
-     // MAC side (write width is always recv_width_p)
-     ,.write_slot_v_i(write_slot_v_li)
-     ,.write_slot_ready_and_o(write_slot_ready_and_lo)
-
-     ,.write_size_v_i(write_size_v_li)
-     ,.write_size_i(write_size_li)
-
-     ,.write_v_i(write_v_li)
-     ,.write_addr_i(write_addr_li)
-     ,.write_data_i(write_data_li)
-     ,.write_op_size_i($clog2(recv_width_p >> 3))
-    );
-  bsg_flow_counter #(.els_p((1 << 16) - 1))
+  bsg_flow_counter #(.els_p(recv_count_p))
    receive_count (
     .clk_i(clk_i)
    ,.reset_i(reset_i)
@@ -141,25 +73,102 @@ end
    ,.count_o(receive_count_o)
   );
 
+
+if(data_width_p == 64) begin
   always_comb begin
-    rx_packet_size_o = '0;
-    read_slot_ready_and_li = 1'b0;
-    read_v_li = 1'b0;
-    read_addr_li = buffer_read_addr_i;
-    buffer_read_data_o = read_data_lo;
-    if(read_slot_v_lo) begin
-      rx_packet_size_o = read_size_r_lo;
-      read_slot_ready_and_li = clear_buffer_i;
-      read_v_li = buffer_read_v_i;
+    packet_size_remaining = 'h0;
+    case(rx_axis_tkeep_i)
+      8'b1111_1111:
+        packet_size_remaining = 'h8;
+      8'b0111_1111:
+        packet_size_remaining = 'h7;
+      8'b0011_1111:
+        packet_size_remaining = 'h6;
+      8'b0001_1111:
+        packet_size_remaining = 'h5;
+      8'b0000_1111:
+        packet_size_remaining = 'h4;
+      8'b0000_0111:
+        packet_size_remaining = 'h3;
+      8'b0000_0011:
+        packet_size_remaining = 'h2;
+      8'b0000_0001:
+        packet_size_remaining = 'h1;
+    endcase
+  end
+end
+else if(data_width_p == 32) begin
+  always_comb begin
+    packet_size_remaining = 'h0;
+    case(rx_axis_tkeep_i)
+      4'b1111:
+        packet_size_remaining = 'h4;
+      4'b0111:
+        packet_size_remaining = 'h3;
+      4'b0011:
+        packet_size_remaining = 'h2;
+      4'b0001:
+        packet_size_remaining = 'h1;
+    endcase
+  end
+end
+
+  bsg_counter_clear_up #( // unit: 'data_width_p/8' byte
+      .max_val_p(eth_mtu_p/(data_width_p/8)-1)
+     ,.init_val_p(0)
+    ) recv_counter (
+      .clk_i(clk_i)
+     ,.reset_i(reset_i)
+     ,.clear_i(recv_ptr_unwind)
+     ,.up_i(recv_ptr_increment)
+     ,.count_o(recv_ptr_r)
+    );
+
+  assign packet_avail_o = packet_avail_lo;
+
+  packet_buffer #(.slot_p(2)
+     ,.data_width_p(data_width_p)
+     ,.els_p(eth_mtu_p))
+    rx_buffer (
+      .clk_i(clk_i)
+     ,.reset_i(reset_i)
+
+     ,.packet_avail_o(packet_avail_lo)
+     ,.packet_ack_i(packet_ack_li)
+     ,.packet_rvalid_i(packet_rvalid_li)
+     ,.packet_raddr_i(packet_raddr_li)
+     ,.packet_rdata_o(packet_rdata_lo)
+     ,.packet_rsize_o(packet_rsize_lo)
+
+     ,.packet_send_i(packet_send_li)
+     ,.packet_req_o(packet_req_lo)
+     ,.packet_wsize_valid_i(packet_wsize_valid_li)
+     ,.packet_wsize_i(packet_wsize_li)
+     ,.packet_wvalid_i(packet_wvalid_li)
+     ,.packet_waddr_i(packet_waddr_li)
+     ,.packet_wdata_i(packet_wdata_li)
+     ,.packet_wdata_size_i($clog2(data_width_p >> 3))
+    );
+
+  always_comb begin
+    packet_rsize_o = '0;
+    packet_ack_li = 1'b0;
+    packet_rvalid_li = 1'b0;
+    packet_raddr_li = packet_raddr_i;
+    packet_rdata_o = packet_rdata_lo;
+    if(packet_avail_lo) begin
+      packet_rsize_o = packet_rsize_lo;
+      packet_ack_li = packet_ack_i;
+      packet_rvalid_li = packet_rvalid_i;
     end
   end
 
   // synopsys translate_off
   always_ff @(posedge clk_i) begin
     if(~reset_i) begin
-      assert(~(~read_slot_v_lo & buffer_read_v_i))
+      assert(~(~packet_avail_lo & packet_rvalid_i))
         else $error("reading data when rx not ready");
-      assert(~(~read_slot_v_lo & clear_buffer_i))
+      assert(~(~packet_avail_lo & packet_ack_i))
         else $error("receiving packet when rx not ready");
     end
   end
@@ -169,30 +178,30 @@ end
     rx_axis_tready_o = 1'b0;
     recv_ptr_unwind = 1'b0;
     recv_ptr_increment = 1'b0;
-    write_slot_v_li = 1'b0;
-    write_size_li = '0;
-    write_size_v_li = 1'b0;
-    write_v_li = 1'b0;
-    write_addr_li = '0;
-    write_data_li = '0;
+    packet_send_li = 1'b0;
+    packet_wsize_li = '0;
+    packet_wsize_valid_li = 1'b0;
+    packet_wvalid_li = 1'b0;
+    packet_waddr_li = '0;
+    packet_wdata_li = '0;
     receive_complete = 1'b0;
-    if(write_slot_ready_and_lo) begin
+    if(packet_req_lo) begin
       rx_axis_tready_o = 1'b1;
       if(rx_axis_tvalid_i) begin
-        write_v_li = 1'b1;
-        write_addr_li = addr_width_lp'(recv_ptr_r*(recv_width_p/8));
-        write_data_li = rx_axis_tdata_i;
+        packet_wvalid_li = 1'b1;
+        packet_waddr_li = addr_width_lp'(recv_ptr_r*(data_width_p/8));
+        packet_wdata_li = rx_axis_tdata_i;
         if(rx_axis_tlast_i) begin
           recv_ptr_unwind = 1'b1;
           if(~rx_axis_tuser_i) begin
             // end of good frame
-            write_slot_v_li = 1'b1;
-            write_size_li = (recv_ptr_r*(recv_width_p/8)) + packet_size_remaining;
-            write_size_v_li = 1'b1;
+            packet_send_li = 1'b1;
+            packet_wsize_li = (recv_ptr_r*(data_width_p/8)) + packet_size_remaining;
+            packet_wsize_valid_li = 1'b1;
             receive_complete = 1'b1;
           end
         end
-        else begin // ~tlast
+        else begin
           recv_ptr_increment = 1'b1;
         end
       end

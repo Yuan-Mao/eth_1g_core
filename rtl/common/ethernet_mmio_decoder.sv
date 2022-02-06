@@ -1,7 +1,7 @@
 
 /*
  * Memory map (compatible with the Litex Ethernet driver in Linux kernel 5.15):
- *   1. RX/TX Buffers:
+ *   1. RX/TX Buffers (when eth_mtu_p == 0x800):
  *
  *     RX Buffer:
  *       0x0000-0x0800
@@ -32,44 +32,48 @@
  *
  */
 
+`include "bsg_defines.v"
+
 
 module ethernet_mmio_decoder #
 (
-      parameter  buf_size_p           = 2048 // byte
-    , parameter  axis_width_p         = 32
-    , parameter  packet_size_width_lp = $clog2(buf_size_p) + 1
-    , parameter  addr_width_lp        = $clog2(buf_size_p)
+      parameter  eth_mtu_p            = 2048 // byte
+    , parameter  data_width_p         = 32
+    , localparam size_width_lp        = `BSG_WIDTH(`BSG_SAFE_CLOG2(data_width_p/8))
+    , localparam packet_size_width_lp = $clog2(eth_mtu_p+1)
+    , localparam packet_addr_width_lp = $clog2(eth_mtu_p)
+    , localparam addr_width_lp        = 14
 )
 (
       input  logic                              clk_i
     , input  logic                              reset_i
 
-    , input  logic [15:0]                       addr_i
+    , input  logic [addr_width_lp-1:0]          addr_i
     , input  logic                              write_en_i
     , input  logic                              read_en_i
 
-    , input  logic [1:0]                        op_size_i
-    , input  logic [axis_width_p-1:0]           write_data_i
-    , output logic [axis_width_p-1:0]           read_data_o // sync read
-    , output logic [axis_width_p-1:0]           read_data_v_o
+    , input  logic [size_width_lp-1:0]          op_size_i
+    , input  logic [data_width_p-1:0]           write_data_i
+    , output logic [data_width_p-1:0]           read_data_o // sync read
+    , output logic                              read_data_v_o
 
     , input  logic [15:0]                       debug_info_i
-    , input  logic                              rx_ready_i
-    , input  logic                              tx_ready_i
-    , input  logic [15:0]                       rx_packet_size_i
 
-    , output logic                              send_o
-    , output logic                              clear_buffer_o
-    , output logic                              tx_packet_size_v_o
-    , output logic [packet_size_width_lp - 1:0] tx_packet_size_o
-    , output logic [addr_width_lp - 1:0]        buffer_write_addr_o
-    , output logic [1:0]                        buffer_write_op_size_o
-    , output logic [axis_width_p-1:0]           buffer_write_data_o
-    , output logic                              buffer_write_v_o
+    , output logic                              packet_send_o
+    , input  logic                              packet_req_i
+    , output logic                              packet_wsize_valid_o
+    , output logic [packet_size_width_lp-1:0]   packet_wsize_o
+    , output logic                              packet_wvalid_o
+    , output logic [packet_addr_width_lp-1:0]   packet_waddr_o
+    , output logic [data_width_p-1:0]           packet_wdata_o
+    , output logic [$clog2(data_width_p/8)-1:0] packet_wdata_size_o
 
-    , output logic [addr_width_lp - 1:0]        buffer_read_addr_o
-    , output logic                              buffer_read_v_o
-    , input  logic [axis_width_p-1:0]           buffer_read_data_r_i
+    , output logic                              packet_ack_o
+    , input  logic                              packet_avail_i
+    , output logic                              packet_rvalid_o
+    , output logic [packet_addr_width_lp-1:0]   packet_raddr_o
+    , input  logic [data_width_p-1:0]           packet_rdata_i
+    , input  logic [packet_size_width_lp-1:0]   packet_rsize_i
 
     , output logic                              tx_interrupt_clear_o
 
@@ -84,32 +88,32 @@ module ethernet_mmio_decoder #
 );
 
   logic buffer_read_v_r;
-  logic [axis_width_p-1:0] readable_reg_r, readable_reg_n;
+  logic [data_width_p-1:0] readable_reg_r, readable_reg_n;
   logic rx_interrupt_clear, tx_interrupt_clear;
   // Not used in this Ethernet controller, always points to 0
   logic tx_idx_r, tx_idx_n;
 
   bsg_dff_reset
-   #(.width_p(axis_width_p + 2))
+   #(.width_p(data_width_p + 2))
     register
      (.clk_i(clk_i)
       ,.reset_i(reset_i)
-      ,.data_i({readable_reg_n, buffer_read_v_o, tx_idx_n})
+      ,.data_i({readable_reg_n, packet_rvalid_o, tx_idx_n})
       ,.data_o({readable_reg_r, buffer_read_v_r, tx_idx_r})
       );
 
   always_comb begin
     io_decode_error_o = 1'b0;
-    buffer_read_addr_o = '0;
-    buffer_read_v_o = 1'b0;
+    packet_raddr_o = '0;
+    packet_rvalid_o = 1'b0;
 
-    buffer_write_addr_o = '0;
-    buffer_write_op_size_o = '0;
-    buffer_write_data_o = '0;
-    buffer_write_v_o = 1'b0;
+    packet_waddr_o = '0;
+    packet_wdata_size_o = '0;
+    packet_wdata_o = '0;
+    packet_wvalid_o = 1'b0;
 
     readable_reg_n = '0;
-    send_o = 1'b0;
+    packet_send_o = 1'b0;
     tx_idx_n     = tx_idx_r;
     rx_interrupt_clear = 1'b0;
     tx_interrupt_clear = 1'b0;
@@ -119,15 +123,15 @@ module ethernet_mmio_decoder #
     tx_interrupt_enable_o = 1'b0;
     tx_interrupt_enable_v_o = 1'b0;
 
-    tx_packet_size_o = '0;
-    tx_packet_size_v_o = 1'b0;
+    packet_wsize_o = '0;
+    packet_wsize_valid_o = 1'b0;
     casez(addr_i)
       16'h0???: begin
         if(addr_i < 16'h0800) begin
           // RX buffer; R
           if(read_en_i) begin
-            buffer_read_addr_o = addr_i[addr_width_lp-1:0];
-            buffer_read_v_o = 1'b1;
+            packet_raddr_o = addr_i[packet_addr_width_lp-1:0];
+            packet_rvalid_o = 1'b1;
           end
           if(write_en_i)
             io_decode_error_o = 1'b1;
@@ -137,10 +141,10 @@ module ethernet_mmio_decoder #
           if(read_en_i)
             io_decode_error_o = 1'b1;
           if(write_en_i) begin
-            buffer_write_addr_o = addr_i[addr_width_lp-1:0];
-            buffer_write_op_size_o = op_size_i;
-            buffer_write_data_o = write_data_i;
-            buffer_write_v_o = 1'b1;
+            packet_waddr_o = addr_i[packet_addr_width_lp-1:0];
+            packet_wdata_size_o = op_size_i;
+            packet_wdata_o = write_data_i;
+            packet_wvalid_o = 1'b1;
           end
         end
       end
@@ -154,8 +158,8 @@ module ethernet_mmio_decoder #
       16'h1004: begin
         // RX received size; R
         if(read_en_i) begin
-          if(rx_ready_i)
-            readable_reg_n  = rx_packet_size_i;
+          if(packet_avail_i)
+            readable_reg_n  = packet_rsize_i;
         end
         if(write_en_i)
           io_decode_error_o = 1'b1;
@@ -184,12 +188,12 @@ module ethernet_mmio_decoder #
         if(read_en_i)
           io_decode_error_o = 1'b1;
         if(write_en_i)
-          send_o = 1'b1;
+          packet_send_o = 1'b1;
       end
       16'h101C: begin
         // TX Ready bit; R
         if(read_en_i)
-          readable_reg_n = tx_ready_i;
+          readable_reg_n = packet_req_i;
         if(write_en_i)
           io_decode_error_o = 1'b1;
       end
@@ -205,8 +209,8 @@ module ethernet_mmio_decoder #
         if(read_en_i)
           io_decode_error_o = 1'b1;
         if(write_en_i) begin
-          tx_packet_size_o = write_data_i;
-          tx_packet_size_v_o = 1'b1;
+          packet_wsize_o = write_data_i;
+          packet_wsize_valid_o = 1'b1;
         end
       end
       16'h1030: begin
@@ -256,8 +260,17 @@ module ethernet_mmio_decoder #
   );
 
   // Output can either come from RX buffer or registers
-  assign read_data_o = buffer_read_v_r ? buffer_read_data_r_i : readable_reg_r;
+  assign read_data_o = buffer_read_v_r ? packet_rdata_i : readable_reg_r;
 
-  assign clear_buffer_o       = rx_interrupt_clear;
+  assign packet_ack_o       = rx_interrupt_clear;
   assign tx_interrupt_clear_o = tx_interrupt_clear;
+
+  // synopsys translate_off
+  always_ff @(negedge clk_i) begin
+    assert(eth_mtu_p <= 2048)
+      else $error("ethernet_mmio_decoder: eth_mtu_p should be <= 2048\n");
+
+  end
+  // synopsys translate_on
+
 endmodule

@@ -1,34 +1,38 @@
+
+`include "bsg_defines.v"
+
 module ethernet_controller_wrapper #
 (
-      parameter  PLATFORM             = "SIM"
-    , parameter  buf_size_p           = 2048 // byte
-    , parameter  axis_width_p         = 64
+      parameter  PLATFORM      = "SIM"
+    , parameter  data_width_p  = 32
+    , localparam addr_width_lp = 14
+    , localparam size_width_lp = `BSG_WIDTH(`BSG_SAFE_CLOG2(data_width_p/8))
 )
 (
-      input  logic                          clk_i
-    , input  logic                          reset_i
-    , input  logic                          clk250_i
-    , output logic                          reset_clk125_o
+      input  logic                              clk_i
+    , input  logic                              reset_i
+    , input  logic                              clk250_i
+    , output logic                              reset_clk125_o
     // zynq-7000 specific: 200 MHZ for IDELAY tap value
-    , input  logic                          iodelay_ref_clk_i
+    , input  logic                              iodelay_ref_clk_i
 
-    , input  logic [15:0]                   addr_i
-    , input  logic                          write_en_i
-    , input  logic                          read_en_i
-    , input  logic [1:0]                    op_size_i
-    , input  logic [axis_width_p-1:0]       write_data_i
-    , output logic [axis_width_p-1:0]       read_data_o // sync read
-    , output logic                          read_data_v_o
+    , input  logic [addr_width_lp-1:0]          addr_i
+    , input  logic                              write_en_i
+    , input  logic                              read_en_i
+    , input  logic [size_width_lp-1:0]          op_size_i
+    , input  logic [data_width_p-1:0]           write_data_i
+    , output logic [data_width_p-1:0]           read_data_o // sync read
+    , output logic                              read_data_v_o
 
-    , output logic                          rx_interrupt_pending_o
-    , output logic                          tx_interrupt_pending_o
+    , output logic                              rx_interrupt_pending_o
+    , output logic                              tx_interrupt_pending_o
 
-    , input  logic                          rgmii_rx_clk_i
-    , input  logic [3:0]                    rgmii_rxd_i
-    , input  logic                          rgmii_rx_ctl_i
-    , output logic                          rgmii_tx_clk_o
-    , output logic [3:0]                    rgmii_txd_o
-    , output logic                          rgmii_tx_ctl_o
+    , input  logic                              rgmii_rx_clk_i
+    , input  logic [3:0]                        rgmii_rxd_i
+    , input  logic                              rgmii_rx_ctl_i
+    , output logic                              rgmii_tx_clk_o
+    , output logic [3:0]                        rgmii_txd_o
+    , output logic                              rgmii_tx_ctl_o
 );
 
   logic reset_r_lo;
@@ -60,8 +64,7 @@ end
 
   ethernet_controller #(
     .PLATFORM(PLATFORM)
-    ,.buf_size_p(buf_size_p)
-    ,.axis_width_p(axis_width_p))
+    ,.data_width_p(data_width_p))
    eth_ctr (
     .clk_i
     ,.reset_i
