@@ -52,6 +52,7 @@ module ethernet_controller #
   logic                             packet_wvalid_lo;
 
   logic [packet_addr_width_lp-1:0]  packet_raddr_lo;
+  logic [size_width_lp-1:0]         packet_rdata_size_lo;
   logic [data_width_p-1:0]          packet_rdata_lo;
   logic                             packet_rvalid_lo;
 
@@ -118,6 +119,7 @@ module ethernet_controller #
    ,.packet_avail_i(packet_avail_lo)
    ,.packet_rvalid_o(packet_rvalid_lo)
    ,.packet_raddr_o(packet_raddr_lo)
+   ,.packet_rdata_size_o(packet_rdata_size_lo)
    ,.packet_rdata_i(packet_rdata_lo)
    ,.packet_rsize_i(packet_rsize_lo)
 
@@ -167,6 +169,7 @@ module ethernet_controller #
    ,.packet_avail_o(packet_avail_lo)
    ,.packet_rvalid_i(packet_rvalid_lo)
    ,.packet_raddr_i(packet_raddr_lo)
+   ,.packet_rdata_size_i(packet_rdata_size_lo)
    ,.packet_rdata_o(packet_rdata_lo)
    ,.packet_rsize_o(packet_rsize_lo)
 

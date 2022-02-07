@@ -60,9 +60,8 @@ module packet_buffer # (
 
     /* Read signals for RX packet (valid when packet_avail_o == 1) */
     , input  logic                     packet_rvalid_i
-      // read address should be aligned with data_width_p
     , input  logic [addr_width_lp-1:0] packet_raddr_i
-      // sync read (read size always data_width_p)
+    , input  logic [size_width_lp-1:0] packet_rdata_size_i
     , output logic [data_width_p-1:0]  packet_rdata_o
       // packet size; valid as long as packet_avail_o == 1'b1
     , output logic [packet_size_width_lp-1:0] packet_rsize_o
@@ -264,9 +263,11 @@ endgenerate
   always_ff @(negedge clk_i) begin
     if(~reset_i) begin
       assert(misaligned_access == 0)
-          else $error("rx_memory_buffer: misaligned access");
+          else $error("packet_buffer: misaligned access");
       assert(data_width_p == 32 || data_width_p == 64)
-          else $error("rx_memory_buffer: unsupported data width");
+          else $error("packet_buffer: unsupported data width");
+      assert(packet_rdata_size_i == $clog2(data_width_p/8))
+          else $error("packet_buffer: unsupported read size");
     end
   end
   // synopsys translate_on

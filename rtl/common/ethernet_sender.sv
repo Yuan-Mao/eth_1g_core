@@ -96,6 +96,7 @@ module ethernet_sender #
      ,.packet_ack_i(packet_ack_li)
      ,.packet_rvalid_i(packet_rvalid_li)
      ,.packet_raddr_i(packet_raddr_li)
+     ,.packet_rdata_size_i($clog2(data_width_p/8))
      ,.packet_rdata_o(packet_rdata_lo)
      ,.packet_rsize_o(packet_rsize_lo)
 

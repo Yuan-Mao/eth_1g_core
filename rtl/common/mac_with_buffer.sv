@@ -32,6 +32,7 @@ module mac_with_buffer #
     , output logic                            packet_avail_o
     , input  logic                            packet_rvalid_i
     , input  logic [addr_width_lp-1:0]        packet_raddr_i
+    , input  logic [size_width_lp-1:0]        packet_rdata_size_i
     , output logic [data_width_p-1:0]         packet_rdata_o
     , output logic [packet_size_width_lp-1:0] packet_rsize_o
 
@@ -112,6 +113,7 @@ module mac_with_buffer #
        ,.packet_avail_o
        ,.packet_rvalid_i
        ,.packet_raddr_i
+       ,.packet_rdata_size_i
        ,.packet_rdata_o
        ,.packet_rsize_o
 

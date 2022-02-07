@@ -12,6 +12,7 @@ module ethernet_receiver
     , parameter  eth_mtu_p  = 2048 // byte
     , parameter  recv_count_p  = (32'b1 << 16 - 1)
     , localparam addr_width_lp = $clog2(eth_mtu_p)
+    , localparam size_width_lp = `BSG_WIDTH(`BSG_SAFE_CLOG2(data_width_p/8))
     , localparam packet_size_width_lp = $clog2(eth_mtu_p+1)
 )
 (
@@ -23,6 +24,7 @@ module ethernet_receiver
     , output logic                            packet_avail_o // packet is ready to read
     , input logic                             packet_rvalid_i
     , input logic  [addr_width_lp-1:0]        packet_raddr_i
+    , input logic  [size_width_lp-1:0]        packet_rdata_size_i
     , output logic [data_width_p-1:0]         packet_rdata_o // sync read
     , output logic [packet_size_width_lp-1:0] packet_rsize_o
 
@@ -44,6 +46,7 @@ module ethernet_receiver
   logic [packet_size_width_lp-1:0] packet_rsize_lo;
   logic                     packet_rvalid_li;
   logic [addr_width_lp-1:0] packet_raddr_li;
+  logic [size_width_lp-1:0] packet_rdata_size_li;
   logic [data_width_p-1:0]  packet_rdata_lo;
 
   logic                     packet_send_li;
@@ -137,6 +140,7 @@ end
      ,.packet_ack_i(packet_ack_li)
      ,.packet_rvalid_i(packet_rvalid_li)
      ,.packet_raddr_i(packet_raddr_li)
+     ,.packet_rdata_size_i(packet_rdata_size_li)
      ,.packet_rdata_o(packet_rdata_lo)
      ,.packet_rsize_o(packet_rsize_lo)
 
@@ -155,6 +159,7 @@ end
     packet_ack_li = 1'b0;
     packet_rvalid_li = 1'b0;
     packet_raddr_li = packet_raddr_i;
+    packet_rdata_size_li = packet_rdata_size_i;
     packet_rdata_o = packet_rdata_lo;
     if(packet_avail_lo) begin
       packet_rsize_o = packet_rsize_lo;

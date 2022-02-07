@@ -66,12 +66,13 @@ module ethernet_mmio_decoder #
     , output logic                              packet_wvalid_o
     , output logic [packet_addr_width_lp-1:0]   packet_waddr_o
     , output logic [data_width_p-1:0]           packet_wdata_o
-    , output logic [$clog2(data_width_p/8)-1:0] packet_wdata_size_o
+    , output logic [size_width_lp-1:0]          packet_wdata_size_o
 
     , output logic                              packet_ack_o
     , input  logic                              packet_avail_i
     , output logic                              packet_rvalid_o
     , output logic [packet_addr_width_lp-1:0]   packet_raddr_o
+    , output logic [size_width_lp-1:0]          packet_rdata_size_o
     , input  logic [data_width_p-1:0]           packet_rdata_i
     , input  logic [packet_size_width_lp-1:0]   packet_rsize_i
 
@@ -108,6 +109,7 @@ module ethernet_mmio_decoder #
     packet_rvalid_o = 1'b0;
 
     packet_waddr_o = '0;
+    packet_rdata_size_o = '0;
     packet_wdata_size_o = '0;
     packet_wdata_o = '0;
     packet_wvalid_o = 1'b0;
@@ -132,6 +134,7 @@ module ethernet_mmio_decoder #
           if(read_en_i) begin
             packet_raddr_o = addr_i[packet_addr_width_lp-1:0];
             packet_rvalid_o = 1'b1;
+            packet_rdata_size_o = op_size_i;
           end
           if(write_en_i)
             io_decode_error_o = 1'b1;
@@ -269,7 +272,8 @@ module ethernet_mmio_decoder #
   always_ff @(negedge clk_i) begin
     assert(eth_mtu_p <= 2048)
       else $error("ethernet_mmio_decoder: eth_mtu_p should be <= 2048\n");
-
+    assert(data_width_p == 32)
+      else $error("ethernet_mmio_decoder: unsupported data_width_p\n");
   end
   // synopsys translate_on
 
