@@ -86,7 +86,6 @@ module eth_mac_1g_rgmii #
 );
 
 wire gtx_clk;
-wire gtx_rst;
 
 wire [7:0]  mac_gmii_rxd;
 wire        mac_gmii_rx_dv;

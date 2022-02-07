@@ -23,7 +23,9 @@ $COMMON_DIR/axis_gmii_tx.v
 $COMMON_DIR/iddr.v
 $COMMON_DIR/lfsr.v
 $COMMON_DIR/ssio_ddr_in.v
-$COMMON_DIR/oddr_clock_downsample.v
+$COMMON_DIR/gtx_clk_and_phy_tx_clk_generator.sv
+$COMMON_DIR/oddr_clock_downsample_and_right_shift.sv
+
 $COMMON_DIR/rgmii_phy_if.v
 
 $BASEJUMP_DIR/bsg_link/bsg_link_oddr_phy.v

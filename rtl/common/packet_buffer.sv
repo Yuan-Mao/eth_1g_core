@@ -266,7 +266,8 @@ endgenerate
           else $error("packet_buffer: misaligned access");
       assert(data_width_p == 32 || data_width_p == 64)
           else $error("packet_buffer: unsupported data width");
-      assert(packet_rdata_size_i == $clog2(data_width_p/8))
+      assert((packet_rvalid_i != 1'b1) ||
+        (packet_rdata_size_i == $clog2(data_width_p/8)))
           else $error("packet_buffer: unsupported read size");
     end
   end

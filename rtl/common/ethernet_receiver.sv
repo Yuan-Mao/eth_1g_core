@@ -5,9 +5,11 @@
  *
  */
 
+`include "bsg_defines.v"
+
 module ethernet_receiver
 #(
-      parameter  data_width_p  = 64
+      parameter  data_width_p  = 32
       // maximum size of an Ethernet packet
     , parameter  eth_mtu_p  = 2048 // byte
     , parameter  recv_count_p  = (32'b1 << 16 - 1)

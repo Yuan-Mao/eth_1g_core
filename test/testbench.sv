@@ -6,11 +6,11 @@ module testbench();
     parameter  PLATFORM = "SIM";
 
     parameter  buf_size_p       = 2048; // byte
-    parameter  axis_width_p     = 64;   // bit
+    parameter  data_width_p     = 32;   // bit
     localparam reg_addr_width_p = 16;   // address width(bit)
 
     localparam packet_size_width_lp = $clog2(buf_size_p) + 1;
-    localparam addr_width_lp = $clog2(buf_size_p / (axis_width_p / 8));
+    localparam addr_width_lp = $clog2(buf_size_p / (data_width_p / 8));
     parameter  packet_count_p = 5;
 
     logic                              clk_i;
@@ -22,8 +22,8 @@ module testbench();
     logic [1:0]                        write_en_i;
     logic [1:0]                        read_en_i;
     logic [1:0][1:0]                   op_size_i;
-    logic [1:0][axis_width_p-1:0]      write_data_i;
-    logic [1:0][axis_width_p-1:0]      read_data_o;
+    logic [1:0][data_width_p-1:0]      write_data_i;
+    logic [1:0][data_width_p-1:0]      read_data_o;
     logic [1:0]                        read_data_v_o;
 
     logic [1:0]                        rx_interrupt_pending_o;
@@ -82,7 +82,7 @@ module testbench();
 
     task automatic write_addr (
             input logic [reg_addr_width_p-1:0] address
-           ,input logic [axis_width_p-1:0] data
+           ,input logic [data_width_p-1:0] data
            ,input logic [1:0]  op_size
            ,input logic id_i);
       case(op_size)
@@ -104,7 +104,7 @@ module testbench();
 
     task automatic read_addr (
             input  logic [reg_addr_width_p-1:0] address_i
-           ,output logic [axis_width_p-1:0] data_o
+           ,output logic [data_width_p-1:0] data_o
            ,input  logic [1:0]  op_size
            ,input  logic id_i);
         op_size_i[id_i] = op_size;
@@ -119,15 +119,15 @@ module testbench();
 
     task automatic send_random_packet(input [reg_addr_width_p-1:0] size);
         logic [reg_addr_width_p-1:0] count, cur;
-        logic [axis_width_p-1:0] data_lo, value;
+        logic [data_width_p-1:0] data_lo, value;
         logic [buf_size_p*8-1:0] packet;
         integer i, wait_cnt;
-        assert((size % (axis_width_p / 8)) == 0);
-        count = size / (axis_width_p / 8);
+        assert((size % (data_width_p / 8)) == 0);
+        count = size / (data_width_p / 8);
         $display("Sending packet with size 0x%x:", size);
         for(i = 0;i < count;i = i + 1) begin
             value = {$urandom, $urandom};
-            packet[(i * axis_width_p)+:axis_width_p] = value;
+            packet[(i * data_width_p)+:data_width_p] = value;
         end
         // wait for TX 0 to be ready
         wait_cnt = 0;
@@ -145,9 +145,9 @@ module testbench();
         end
         // write content
         for(i = 0;i < count;i = i + 1) begin
-            value = packet[i * axis_width_p+:axis_width_p];
-            write_addr('h0800 + (i * axis_width_p / 8), (axis_width_p)'(value), 
-                    $clog2(axis_width_p / 8) , 0);
+            value = packet[i * data_width_p+:data_width_p];
+            write_addr('h0800 + (i * data_width_p / 8), (data_width_p)'(value),
+                    $clog2(data_width_p / 8) , 0);
             $fwrite(tx_file, "%x\n", value);
         end
 
@@ -159,7 +159,7 @@ module testbench();
     endtask
 
     task automatic receive_packet();
-        logic [axis_width_p-1:0] data_lo, size;
+        logic [data_width_p-1:0] data_lo, size;
         logic [reg_addr_width_p-1:0] upper, lower, cur;
 
         int ret;
@@ -181,15 +181,15 @@ module testbench();
         size = data_lo;
         $display("Received packet size:\n0x%x\n", size);
 
-        upper = size / (axis_width_p / 8);
-        lower = size % (axis_width_p / 8);
+        upper = size / (data_width_p / 8);
+        lower = size % (data_width_p / 8);
         for(i = 0;i < upper;i = i + 1) begin
-            read_addr('h0000 + i * (axis_width_p / 8), data_lo, $clog2(axis_width_p / 8), 1);
+            read_addr('h0000 + i * (data_width_p / 8), data_lo, $clog2(data_width_p / 8), 1);
             $fwrite(rx_file, "%x\n", data_lo);
         end
-        cur = upper * (axis_width_p / 8);
+        cur = upper * (data_width_p / 8);
         if(lower) begin
-          for(i = $clog2(axis_width_p / 8) - 1;i >= 0;i = i - 1) begin
+          for(i = $clog2(data_width_p / 8) - 1;i >= 0;i = i - 1) begin
             if(lower >= (1 << i)) begin
               read_addr('h0000 + cur, data_lo, i, 1);
               case(i)
@@ -224,7 +224,7 @@ module testbench();
                 clk_tick();
             end
             size = $urandom() % 1400 + 64;
-            size = size / (axis_width_p / 8) * (axis_width_p / 8);
+            size = size / (data_width_p / 8) * (data_width_p / 8);
             $display("Sending %d packet", tx_send_cnt);
             send_random_packet(size);
         end
@@ -291,13 +291,13 @@ generate
         ethernet_controller #(
             .PLATFORM(PLATFORM)
            ,.buf_size_p(buf_size_p)
-           ,.axis_width_p(axis_width_p)
+           ,.data_width_p(data_width_p)
         ) eth (
             .clk_i(clk_i)
            ,.reset_i(reset_i)
            ,.clk250_i(clk250_i)
            ,.reset_clk250_i(reset_clk250_i)
-           ,.reset_clk250_late_o(/* UNUSED */)
+           ,.reset_clk125_o(/* UNUSED */)
                                   
            ,.addr_i(addr_i[k])
            ,.write_en_i(write_en_i[k])
