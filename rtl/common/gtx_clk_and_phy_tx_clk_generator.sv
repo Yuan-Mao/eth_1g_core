@@ -78,7 +78,7 @@ bsg_counter_clock_downsample #(.width_p(2))
 localparam max_val_lp = 8;
 localparam ptr_width_lp = `BSG_SAFE_CLOG2(max_val_lp+1);
 logic [ptr_width_lp-1:0] reset_cycle_r;
-wire up_li = (reset_cycle_r != '1);
+wire up_li = (reset_cycle_r != max_val_lp);
 
 bsg_counter_clear_up #(
   .max_val_p(max_val_lp)
@@ -90,7 +90,7 @@ bsg_counter_clear_up #(
   ,.up_i(up_li)
   ,.count_o(reset_cycle_r));
 
-wire gtx_rst_n = (reset_cycle_r != '1);
+wire gtx_rst_n = (reset_cycle_r != max_val_lp);
 bsg_dff #(.width_p(1))
  reset_buf (
   .clk_i(clk250_i)
