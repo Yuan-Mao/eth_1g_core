@@ -1,8 +1,16 @@
 
+/*
+ *   This module downsamples and right shifts the input clock.
+ * In our specific use case, the clk_i is 250 MHZ, and by having
+ * differnet clk_setting_i, we can get 2.5 MHZ, 25 MHZ and 125 MHZ
+ * right shifted generated clock at runtime.
+ *   To see how Alex's Ethernet module achieves this, please see
+ * rgmii_tx_clk_1, rgmii_tx_clk_2 in rgmii_phy_if.v.
+ *
+ */
+
 module oddr_clock_downsample_and_right_shift
-  (// reset, data and ready signals synchronous to clk_i
-   // no valid signal required (assume valid_i is constant 1)
-   input                      clk_i
+  (input                      clk_i
   ,input                      reset_i
   ,input [1:0]                clk_setting_i
   ,output                     ready_o
@@ -17,7 +25,6 @@ module oddr_clock_downsample_and_right_shift
   // ready to accept new data every two cycles
   assign ready_o = ~odd_r;
 
-  // register 2x-wide input data in flops
   always_ff @(posedge clk_i)
     if (~odd_r)
         clk_setting_r <= clk_setting_i;
