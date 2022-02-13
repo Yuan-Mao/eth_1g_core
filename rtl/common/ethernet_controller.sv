@@ -197,7 +197,7 @@ module ethernet_controller #
    );
 
 
-  interrupt_generator interrupt_generator (
+  interrupt_control_unit interrupt_control_unit (
     .clk_i(clk_i)
    ,.reset_i(reset_i)
    ,.packet_avail_i(packet_avail_lo)

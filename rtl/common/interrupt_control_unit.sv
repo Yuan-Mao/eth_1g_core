@@ -1,5 +1,5 @@
 
-module interrupt_generator (
+module interrupt_control_unit (
 
     input  logic    clk_i
   , input  logic    reset_i

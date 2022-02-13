@@ -10,7 +10,7 @@ $COMMON_DIR/ethernet_sender.sv
 $COMMON_DIR/packet_buffer.sv
 $COMMON_DIR/ethernet_controller.sv
 $COMMON_DIR/ethernet_mmio_decoder.sv
-$COMMON_DIR/interrupt_generator.sv
+$COMMON_DIR/interrupt_control_unit.sv
 $COMMON_DIR/mac_with_buffer.sv
 $COMMON_DIR/eth_mac_1g_rgmii_fifo.v
 $COMMON_DIR/eth_mac_1g_rgmii.v
