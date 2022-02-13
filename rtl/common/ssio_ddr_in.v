@@ -83,13 +83,6 @@ if (TARGET == "XILINX") begin
 
         assign clk_int = input_clk;
 
-        // pass through RX clock to input buffers
-        BUFIO
-        clk_bufio (
-            .I(clk_int),
-            .O(clk_io)
-        );
-
         // pass through RX clock to logic
         BUFR #(
             .BUFR_DIVIDE("BYPASS")
@@ -101,6 +94,7 @@ if (TARGET == "XILINX") begin
             .CLR(1'b0)
         );
 
+        assign clk_io = output_clk;
     end else if (CLOCK_INPUT_STYLE == "BUFIO") begin
 
         assign clk_int = input_clk;

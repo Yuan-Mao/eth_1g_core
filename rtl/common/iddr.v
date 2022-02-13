@@ -80,17 +80,17 @@ if (TARGET == "XILINX") begin
                 IDELAYE2 #(
                     .DELAY_SRC("IDATAIN")
                    ,.IDELAY_TYPE("FIXED")
-                   ,.IDELAY_VALUE(7)
+                   ,.IDELAY_VALUE(0)
                    ,.REFCLK_FREQUENCY(200.0)
                    ,.SIGNAL_PATTERN("DATA")
                 ) idelay2_inst (
-                    .CNTVALUEOUT(/* UNUSED */)
+                    .CNTVALUEOUT() // UNUSED
                    ,.DATAOUT(delayed_d[n])
                    ,.C(1'b0)
                    ,.CE(1'b0)
                    ,.CINVCTRL(1'b0)
                    ,.CNTVALUEIN('0)
-                   ,.DATAIN(/* UNUSED */)
+                   ,.DATAIN() // UNUSED
                    ,.IDATAIN(d[n])
                    ,.INC(1'b0)
                    ,.LD(1'b0)
@@ -100,19 +100,12 @@ if (TARGET == "XILINX") begin
             end else begin
                 assign delayed_d[n] = d[n];
             end
-            IDDR #(
-                .DDR_CLK_EDGE("SAME_EDGE_PIPELINED"),
-                .SRTYPE("ASYNC")
-            )
-            iddr_inst (
-                .Q1(q1[n]),
-                .Q2(q2[n]),
-                .C(clk),
-                .CE(1'b1),
-                .D(delayed_d[n]),
-                .R(1'b0),
-                .S(1'b0)
-            );
+                bsg_link_iddr_phy #(.width_p(1))
+                  iddr_inst (
+                    .clk_i(clk)
+                   ,.data_i(delayed_d[n])
+                   ,.data_r_o({q2[n], q1[n]})
+                  );
         end else if (IODDR_STYLE == "IODDR2") begin
             IDDR2 #(
                 .DDR_ALIGNMENT("C0")
@@ -153,27 +146,13 @@ end else if (TARGET == "ALTERA") begin
 
     assign q1 = q1_delay;
 end else begin
-    reg [WIDTH-1:0] d_reg_1;
-    reg [WIDTH-1:0] d_reg_2;
 
-    reg [WIDTH-1:0] q_reg_1;
-    reg [WIDTH-1:0] q_reg_2;
-
-    always @(posedge clk) begin
-        d_reg_1 <= d;
-    end
-
-    always @(negedge clk) begin
-        d_reg_2 <= d;
-    end
-
-    always @(posedge clk) begin
-        q_reg_1 <= d_reg_1;
-        q_reg_2 <= d_reg_2;
-    end
-
-    assign q1 = q_reg_1;
-    assign q2 = q_reg_2;
+    bsg_link_iddr_phy #(.width_p(WIDTH))
+      iddr_inst (
+        .clk_i(clk)
+       ,.data_i(d)
+       ,.data_r_o({q2, q1})
+      );
 end
 
 endgenerate
