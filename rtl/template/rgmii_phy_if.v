@@ -69,11 +69,7 @@ rgmii_txd, rgmii_tx_ctl:
 /*
  * RGMII PHY interface
  */
-module rgmii_phy_if #
-(
-    parameter PLATFORM = "SIM"
-)
-(
+module rgmii_phy_if (
     input  wire        clk250,
     input  wire        clk250_rst,
     output wire        gtx_clk,
@@ -117,7 +113,6 @@ wire rgmii_rx_ctl_2;
 
 ssio_ddr_in #
 (
-    .PLATFORM(PLATFORM),
     .WIDTH(5)
 )
 rx_ssio_ddr_inst (

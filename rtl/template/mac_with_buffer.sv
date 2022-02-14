@@ -3,8 +3,7 @@
 
 module mac_with_buffer #
 (
-      parameter  PLATFORM             = "SIM"
-    , parameter  eth_mtu_p            = 2048 // byte
+      parameter  eth_mtu_p            = 2048 // byte
     , parameter  data_width_p         = 32
     , localparam size_width_lp = `BSG_WIDTH(`BSG_SAFE_CLOG2(data_width_p/8))
     , localparam addr_width_lp        = $clog2(eth_mtu_p)
@@ -127,9 +126,8 @@ module mac_with_buffer #
        ,.receive_count_o(receive_count_o)
     );
 
-    eth_mac_1g_rgmii_fifo #(.AXIS_DATA_WIDTH(data_width_p)
-        ,.PLATFORM(PLATFORM))
-          mac (
+    eth_mac_1g_rgmii_fifo #(.AXIS_DATA_WIDTH(data_width_p))
+        mac (
         .clk250(clk250_i)
        ,.clk250_rst(reset_clk250_i)
        ,.gtx_rst(reset_clk125_o)

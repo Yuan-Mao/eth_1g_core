@@ -3,8 +3,7 @@
 
 module ethernet_controller_wrapper #
 (
-      parameter  PLATFORM      = "SIM"
-    , parameter  data_width_p  = 32
+      parameter  data_width_p  = 32
     , localparam addr_width_lp = 14
     , localparam size_width_lp = `BSG_WIDTH(`BSG_SAFE_CLOG2(data_width_p/8))
 )
@@ -42,13 +41,11 @@ module ethernet_controller_wrapper #
       ,.data_i(reset_i)
       ,.data_o(reset_r_lo)
       );
-if (PLATFORM == "ZEDBOARD") begin
   iodelay_control iodelay_control(
     .clk_i(clk_i)
     ,.reset_r_i(reset_r_lo)
     ,.iodelay_ref_clk_i
   );
-end
 
   (* ASYNC_REG = "TRUE", SHREG_EXTRACT = "NO" *)
   logic [3:0] reset_clk250_sync_r;
@@ -63,8 +60,7 @@ end
   wire reset_clk250_li  = reset_clk250_sync_r[0];
 
   ethernet_controller #(
-    .PLATFORM(PLATFORM)
-    ,.data_width_p(data_width_p))
+     .data_width_p(data_width_p))
    eth_ctr (
     .clk_i
     ,.reset_i

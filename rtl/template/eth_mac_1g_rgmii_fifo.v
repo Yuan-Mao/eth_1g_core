@@ -31,8 +31,6 @@ THE SOFTWARE.
  */
 module eth_mac_1g_rgmii_fifo #
 (
-    // platform ("ZEDBOARD", "SIM")
-    parameter PLATFORM = "SIM",
     parameter AXIS_DATA_WIDTH = 8,
     parameter AXIS_KEEP_ENABLE = (AXIS_DATA_WIDTH>8),
     parameter AXIS_KEEP_WIDTH = (AXIS_DATA_WIDTH/8),
@@ -128,11 +126,8 @@ wire        rx_fifo_axis_tuser;
 wire tx_error_underflow_int;
 
 reg [0:0] tx_sync_reg_1;
-(* ASYNC_REG = "TRUE", SHREG_EXTRACT = "NO" *)
 reg [0:0] tx_sync_reg_2;
-(* ASYNC_REG = "TRUE", SHREG_EXTRACT = "NO" *)
 reg [0:0] tx_sync_reg_3;
-(* ASYNC_REG = "TRUE", SHREG_EXTRACT = "NO" *)
 reg [0:0] tx_sync_reg_4;
 
 assign tx_error_underflow = tx_sync_reg_3[0] ^ tx_sync_reg_4[0];
@@ -161,11 +156,8 @@ wire rx_error_bad_frame_int;
 wire rx_error_bad_fcs_int;
 
 reg [1:0] rx_sync_reg_1;
-(* ASYNC_REG = "TRUE", SHREG_EXTRACT = "NO" *)
 reg [1:0] rx_sync_reg_2;
-(* ASYNC_REG = "TRUE", SHREG_EXTRACT = "NO" *)
 reg [1:0] rx_sync_reg_3;
-(* ASYNC_REG = "TRUE", SHREG_EXTRACT = "NO" *)
 reg [1:0] rx_sync_reg_4;
 
 assign rx_error_bad_frame = rx_sync_reg_3[0] ^ rx_sync_reg_4[0];
@@ -193,9 +185,7 @@ end
 
 wire [1:0] speed_int;
 
-(* ASYNC_REG = "TRUE", SHREG_EXTRACT = "NO" *)
 reg [1:0] speed_sync_reg_1;
-(* ASYNC_REG = "TRUE", SHREG_EXTRACT = "NO" *)
 reg [1:0] speed_sync_reg_2;
 
 assign speed = speed_sync_reg_2;
@@ -206,7 +196,6 @@ always @(posedge logic_clk) begin
 end
 
 eth_mac_1g_rgmii #(
-    .PLATFORM(PLATFORM),
     .ENABLE_PADDING(ENABLE_PADDING),
     .MIN_FRAME_LENGTH(MIN_FRAME_LENGTH)
 )

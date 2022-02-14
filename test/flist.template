@@ -1,34 +1,33 @@
 
 +incdir+$BASEJUMP_DIR/bsg_misc
-+incdir+$COMMON_DIR
++incdir+$SRC_DIR
 
 $TEST_DIR/testbench.sv
 $TEST_DIR/helper.cpp
 
-$COMMON_DIR/ethernet_receiver.sv
-$COMMON_DIR/ethernet_sender.sv
-$COMMON_DIR/packet_buffer.sv
-$COMMON_DIR/ethernet_controller.sv
-$COMMON_DIR/ethernet_mmio_decoder.sv
-$COMMON_DIR/interrupt_control_unit.sv
-$COMMON_DIR/mac_with_buffer.sv
-$COMMON_DIR/eth_mac_1g_rgmii_fifo.v
-$COMMON_DIR/eth_mac_1g_rgmii.v
-$COMMON_DIR/eth_mac_1g.v
-$COMMON_DIR/axis_adapter.v
-$COMMON_DIR/axis_async_fifo_adapter.v
-$COMMON_DIR/axis_async_fifo.v
-$COMMON_DIR/axis_gmii_rx.v
-$COMMON_DIR/axis_gmii_tx.v
-$COMMON_DIR/iddr.v
-$COMMON_DIR/lfsr.v
-$COMMON_DIR/ssio_ddr_in.v
-$COMMON_DIR/gtx_clk_and_phy_tx_clk_generator.sv
-$COMMON_DIR/oddr_clock_downsample_and_right_shift.sv
-
-$COMMON_DIR/rgmii_phy_if.v
+$SRC_DIR/ethernet_receiver.sv
+$SRC_DIR/ethernet_sender.sv
+$SRC_DIR/packet_buffer.sv
+$SRC_DIR/ethernet_controller.sv
+$SRC_DIR/ethernet_mmio_decoder.sv
+$SRC_DIR/interrupt_control_unit.sv
+$SRC_DIR/mac_with_buffer.sv
+$SRC_DIR/eth_mac_1g_rgmii_fifo.v
+$SRC_DIR/eth_mac_1g_rgmii.v
+$SRC_DIR/eth_mac_1g.v
+$SRC_DIR/axis_adapter.v
+$SRC_DIR/axis_async_fifo_adapter.v
+$SRC_DIR/axis_async_fifo.v
+$SRC_DIR/axis_gmii_rx.v
+$SRC_DIR/axis_gmii_tx.v
+$SRC_DIR/lfsr.v
+$SRC_DIR/ssio_ddr_in.v
+$SRC_DIR/gtx_clk_and_phy_tx_clk_generator.sv
+$SRC_DIR/oddr_clock_downsample_and_right_shift.sv
+$SRC_DIR/rgmii_phy_if.v
 
 $BASEJUMP_DIR/bsg_link/bsg_link_oddr_phy.v
+$BASEJUMP_DIR/bsg_link/bsg_link_iddr_phy.v
 $BASEJUMP_DIR/bsg_misc/bsg_defines.v
 $BASEJUMP_DIR/bsg_misc/bsg_counter_clock_downsample.v
 $BASEJUMP_DIR/bsg_misc/bsg_strobe.v

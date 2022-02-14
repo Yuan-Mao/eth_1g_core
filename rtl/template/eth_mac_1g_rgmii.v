@@ -31,7 +31,6 @@ THE SOFTWARE.
  */
 module eth_mac_1g_rgmii #
 (
-    parameter PLATFORM = "SIM",
     parameter ENABLE_PADDING = 1,
     parameter MIN_FRAME_LENGTH = 64
 )
@@ -98,14 +97,12 @@ wire        mac_gmii_tx_er;
 reg [1:0] speed_reg;
 reg mii_select_reg;
 
-(* srl_style = "register" *)
 reg [1:0] tx_mii_select_sync;
 
 always @(posedge tx_clk) begin
     tx_mii_select_sync <= {tx_mii_select_sync[0], mii_select_reg};
 end
 
-(* srl_style = "register" *)
 reg [1:0] rx_mii_select_sync;
 
 always @(posedge rx_clk) begin
@@ -122,7 +119,6 @@ always @(posedge rx_clk) begin
         rx_prescale <= rx_prescale + 3'd1;
 end
 
-(* srl_style = "register" *)
 reg [2:0] rx_prescale_sync;
 
 always @(posedge gtx_clk) begin
@@ -172,10 +168,7 @@ end
 
 assign speed = speed_reg;
 
-rgmii_phy_if #(
-    .PLATFORM(PLATFORM)
-)
-rgmii_phy_if_inst (
+rgmii_phy_if rgmii_phy_if_inst (
     .clk250(clk250),
     .clk250_rst(clk250_rst),
     .gtx_clk(gtx_clk),

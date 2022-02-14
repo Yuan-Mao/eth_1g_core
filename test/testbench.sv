@@ -3,8 +3,6 @@
 
 module testbench();
 
-    parameter  PLATFORM = "SIM";
-
     parameter  buf_size_p       = 2048; // byte
     parameter  data_width_p     = 32;   // bit
     localparam reg_addr_width_p = 16;   // address width(bit)
@@ -289,8 +287,7 @@ generate
 
     for(genvar k = 0;k < 2;k = k + 1) begin: ethernet_controller_core
         ethernet_controller #(
-            .PLATFORM(PLATFORM)
-           ,.buf_size_p(buf_size_p)
+            .buf_size_p(buf_size_p)
            ,.data_width_p(data_width_p)
         ) eth (
             .clk_i(clk_i)

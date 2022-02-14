@@ -170,42 +170,26 @@ reg [ADDR_WIDTH:0] rd_ptr_gray_reg;
 reg [ADDR_WIDTH:0] wr_ptr_temp;
 reg [ADDR_WIDTH:0] rd_ptr_temp;
 
-(* SHREG_EXTRACT = "NO" *)
 reg [ADDR_WIDTH:0] wr_ptr_gray_sync1_reg;
-(* SHREG_EXTRACT = "NO" *)
 reg [ADDR_WIDTH:0] wr_ptr_gray_sync2_reg;
-(* SHREG_EXTRACT = "NO" *)
 reg [ADDR_WIDTH:0] rd_ptr_gray_sync1_reg;
-(* SHREG_EXTRACT = "NO" *)
 reg [ADDR_WIDTH:0] rd_ptr_gray_sync2_reg;
 
 reg wr_ptr_update_valid_reg;
 reg wr_ptr_update_reg;
-(* SHREG_EXTRACT = "NO" *)
 reg wr_ptr_update_sync1_reg;
-(* SHREG_EXTRACT = "NO" *)
 reg wr_ptr_update_sync2_reg;
-(* SHREG_EXTRACT = "NO" *)
 reg wr_ptr_update_sync3_reg;
-(* SHREG_EXTRACT = "NO" *)
 reg wr_ptr_update_ack_sync1_reg;
-(* SHREG_EXTRACT = "NO" *)
 reg wr_ptr_update_ack_sync2_reg;
 
-(* SHREG_EXTRACT = "NO" *)
 reg s_rst_sync1_reg;
-(* SHREG_EXTRACT = "NO" *)
 reg s_rst_sync2_reg;
-(* SHREG_EXTRACT = "NO" *)
 reg s_rst_sync3_reg;
-(* SHREG_EXTRACT = "NO" *)
 reg m_rst_sync1_reg;
-(* SHREG_EXTRACT = "NO" *)
 reg m_rst_sync2_reg;
-(* SHREG_EXTRACT = "NO" *)
 reg m_rst_sync3_reg;
 
-(* ramstyle = "no_rw_check" *)
 reg [WIDTH-1:0] mem[(2**ADDR_WIDTH)-1:0];
 reg [WIDTH-1:0] mem_read_data_reg;
 

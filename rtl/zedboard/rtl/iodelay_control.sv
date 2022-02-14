@@ -5,6 +5,9 @@ module iodelay_control(
     , input logic iodelay_ref_clk_i
 );
 
+`ifdef SIM_MP
+`else
+
   (* ASYNC_REG = "TRUE", SHREG_EXTRACT = "NO" *)
   logic [3:0] reset_iodelay_sync_r;
 
@@ -55,4 +58,5 @@ module iodelay_control(
     ,.REFCLK(iodelay_ref_clk_lo)
     ,.RST(reset_iodelay_hold_r) // active-high reset
     );
+`endif
 endmodule

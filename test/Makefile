@@ -3,9 +3,9 @@
 
 export TOP := $(shell git rev-parse --show-toplevel)
 
-export TEST_DIR     := $(TOP)/test/
-export COMMON_DIR   := $(TOP)/rtl/common/
-export BASEJUMP_DIR := $(TOP)/import/basejump_stl/
+export TEST_DIR     := $(TOP)/test
+export SRC_DIR      := $(TOP)/rtl/asic/work
+export BASEJUMP_DIR := $(TOP)/import/basejump_stl
 
 
 all: flist.vcs

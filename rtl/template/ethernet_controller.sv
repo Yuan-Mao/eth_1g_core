@@ -3,8 +3,7 @@
 
 module ethernet_controller #
 (
-      parameter  PLATFORM      = "SIM"
-    , parameter  data_width_p  = 32
+      parameter  data_width_p  = 32
     , localparam size_width_lp = `BSG_WIDTH(`BSG_SAFE_CLOG2(data_width_p/8))
     , localparam addr_width_lp = 14
 )
@@ -146,8 +145,7 @@ module ethernet_controller #
 
 
   mac_with_buffer #(
-    .PLATFORM(PLATFORM)
-   ,.eth_mtu_p(eth_mtu_lp)
+    .eth_mtu_p(eth_mtu_lp)
    ,.data_width_p(data_width_p)
   ) eth (
     .clk_i(clk_i)
