@@ -21,10 +21,12 @@ module ethernet_sender #
       input  logic                                 clk_i
     , input  logic                                 reset_i
 
-    , input  logic                                 packet_send_i // send out packet
-    , output logic                                 packet_req_o  // space available for packet
+      // send out packet
+    , input  logic                                 packet_send_i
+      // space available for packet
+    , output logic                                 packet_req_o
 
-    // Host -> Packet
+    /* Host -> Packet */
     , input  logic                                 packet_wsize_valid_i
     , input  logic [packet_size_width_lp-1:0]      packet_wsize_i
     , input  logic                                 packet_wvalid_i
@@ -32,7 +34,7 @@ module ethernet_sender #
     , input  logic [data_width_p-1:0]              packet_wdata_i
     , input  logic [size_width_lp-1:0]             packet_wdata_size_i
 
-    // Packet -> AXIS
+    /* Packet -> AXIS */
     , output logic [data_width_p-1:0]              tx_axis_tdata_o
     , output logic [data_width_p/8-1:0]            tx_axis_tkeep_o
     , output logic                                 tx_axis_tvalid_o
@@ -96,7 +98,6 @@ module ethernet_sender #
      ,.packet_ack_i(packet_ack_li)
      ,.packet_rvalid_i(packet_rvalid_li)
      ,.packet_raddr_i(packet_raddr_li)
-     ,.packet_rdata_size_i($clog2(data_width_p/8))
      ,.packet_rdata_o(packet_rdata_lo)
      ,.packet_rsize_o(packet_rsize_lo)
 

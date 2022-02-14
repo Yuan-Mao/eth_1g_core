@@ -21,16 +21,20 @@ module ethernet_receiver
       input logic                             clk_i
     , input logic                             reset_i
 
-    // Host <- Packet
-    , input logic                             packet_ack_i   // clear packet
-    , output logic                            packet_avail_o // packet is ready to read
+    /* Host <- Packet */
+      // clear packet
+    , input logic                             packet_ack_i
+      // packet is ready to read
+    , output logic                            packet_avail_o
     , input logic                             packet_rvalid_i
     , input logic  [addr_width_lp-1:0]        packet_raddr_i
+      // read data size other than data_width_p is not supported
     , input logic  [size_width_lp-1:0]        packet_rdata_size_i
-    , output logic [data_width_p-1:0]         packet_rdata_o // sync read
+      // sync read
+    , output logic [data_width_p-1:0]         packet_rdata_o
     , output logic [packet_size_width_lp-1:0] packet_rsize_o
 
-    // Packet <- AXIS
+    /* Packet <- AXIS */
     , input logic [data_width_p-1:0]          rx_axis_tdata_i
     , input logic [data_width_p/8-1:0]        rx_axis_tkeep_i
     , input logic                             rx_axis_tvalid_i
@@ -38,7 +42,7 @@ module ethernet_receiver
     , input logic                             rx_axis_tlast_i
     , input logic                             rx_axis_tuser_i
 
-    // stat
+    /* stat */
     , output logic [$clog2(recv_count_p+1)-1:0] receive_count_o
 );
   localparam recv_ptr_width_lp = $clog2(eth_mtu_p/(data_width_p/8));
@@ -48,7 +52,6 @@ module ethernet_receiver
   logic [packet_size_width_lp-1:0] packet_rsize_lo;
   logic                     packet_rvalid_li;
   logic [addr_width_lp-1:0] packet_raddr_li;
-  logic [size_width_lp-1:0] packet_rdata_size_li;
   logic [data_width_p-1:0]  packet_rdata_lo;
 
   logic                     packet_send_li;
@@ -142,7 +145,6 @@ end
      ,.packet_ack_i(packet_ack_li)
      ,.packet_rvalid_i(packet_rvalid_li)
      ,.packet_raddr_i(packet_raddr_li)
-     ,.packet_rdata_size_i(packet_rdata_size_li)
      ,.packet_rdata_o(packet_rdata_lo)
      ,.packet_rsize_o(packet_rsize_lo)
 
@@ -161,7 +163,6 @@ end
     packet_ack_li = 1'b0;
     packet_rvalid_li = 1'b0;
     packet_raddr_li = packet_raddr_i;
-    packet_rdata_size_li = packet_rdata_size_i;
     packet_rdata_o = packet_rdata_lo;
     if(packet_avail_lo) begin
       packet_rsize_o = packet_rsize_lo;
@@ -177,6 +178,9 @@ end
         else $error("reading data when rx not ready");
       assert(~(~packet_avail_lo & packet_ack_i))
         else $error("receiving packet when rx not ready");
+      assert((packet_rvalid_li != 1'b1) ||
+        (packet_rdata_size_i == $clog2(data_width_p/8)))
+          else $error("ethernet_receiver: unsupported read size");
     end
   end
   // synopsys translate_on
