@@ -122,15 +122,17 @@ module ethernet_sender #
      ,.data_i({tx_axis_tkeep_li, tx_axis_tlast_li, tx_axis_tuser_li})
      ,.data_o({tx_axis_tkeep_o, tx_axis_tlast_o, tx_axis_tuser_o})
     );
-
+  logic packet_rvalid_lo, packet_rready_li;
   bsg_dff_reset_set_clear #(.width_p(1)
-    ) tx_axis_tvalid_dff (
+    ) packet_rvalid_reg (
       .clk_i(clk_i)
      ,.reset_i(reset_i)
      ,.set_i(packet_rvalid_li)
-     ,.clear_i(tx_axis_tready_i)
-     ,.data_o(tx_axis_tvalid_o)
+     ,.clear_i(packet_rready_li)
+     ,.data_o(packet_rvalid_lo)
     );
+  assign packet_rready_li = tx_axis_tready_i;
+  assign tx_axis_tvalid_o = packet_rvalid_lo;
 
   logic send_ptr_unwind;
   bsg_counter_clear_up #( // unit: 'data_width_p/8' byte
@@ -150,8 +152,7 @@ module ethernet_sender #
   assign send_ptr_end = (send_ptr_width_lp)'((packet_rsize_lo - 1) >> $clog2(data_width_p/8));
   assign send_remaining = packet_rsize_lo[$clog2(data_width_p/8)-1:0];
   assign last_send_f = (send_ptr_r == send_ptr_end);
-
-  wire space_available = ~(tx_axis_tvalid_o & ~tx_axis_tready_i);
+  wire packet_rdata_sending = ~(packet_rvalid_lo & ~packet_rready_li);
   always_comb begin
     send_ptr_increment = 1'b0;
     send_ptr_unwind = 1'b0;
@@ -159,7 +160,7 @@ module ethernet_sender #
     packet_ack_li = 1'b0;
     send_complete = 1'b0;
     if(packet_avail_lo) begin
-      if(space_available) begin
+      if(packet_rdata_sending) begin
         packet_rvalid_li = 1'b1;
         if(~last_send_f) begin
           send_ptr_increment = 1'b1;
