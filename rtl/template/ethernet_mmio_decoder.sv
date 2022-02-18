@@ -55,7 +55,6 @@ module ethernet_mmio_decoder #
     , input  logic [size_width_lp-1:0]          op_size_i
     , input  logic [data_width_p-1:0]           write_data_i
     , output logic [data_width_p-1:0]           read_data_o // sync read
-    , output logic                              read_data_v_o
 
     , input  logic [15:0]                       debug_info_i
 
@@ -253,14 +252,6 @@ module ethernet_mmio_decoder #
     if(read_en_i & write_en_i)
       io_decode_error_o = 1'b1;
   end
-
-  bsg_dff_reset #(.width_p(1)
-  ) read_data_v_reg (
-    .clk_i(clk_i)
-   ,.reset_i(reset_i)
-   ,.data_i(read_en_i & ~io_decode_error_o)
-   ,.data_o(read_data_v_o)
-  );
 
   // Output can either come from RX buffer or registers
   assign read_data_o = buffer_read_v_r ? packet_rdata_i : readable_reg_r;

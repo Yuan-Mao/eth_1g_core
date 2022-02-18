@@ -20,7 +20,6 @@ module ethernet_controller #
     , input  logic [size_width_lp-1:0]          op_size_i
     , input  logic [data_width_p-1:0]           write_data_i
     , output logic [data_width_p-1:0]           read_data_o // sync read
-    , output logic                              read_data_v_o
 
     , output logic                              rx_interrupt_pending_o
     , output logic                              tx_interrupt_pending_o
@@ -101,7 +100,6 @@ module ethernet_controller #
    ,.op_size_i(op_size_i)
    ,.write_data_i(write_data_i)
    ,.read_data_o(read_data_o)
-   ,.read_data_v_o(read_data_v_o)
 
    ,.debug_info_i(debug_info_li)
 

@@ -22,7 +22,6 @@ module testbench();
     logic [1:0][1:0]                   op_size_i;
     logic [1:0][data_width_p-1:0]      write_data_i;
     logic [1:0][data_width_p-1:0]      read_data_o;
-    logic [1:0]                        read_data_v_o;
 
     logic [1:0]                        rx_interrupt_pending_o;
     logic [1:0]                        tx_interrupt_pending_o;
@@ -96,7 +95,6 @@ module testbench();
       write_data_i[id_i] = data;
       write_en_i[id_i] = 1'b1;
       clk_tick();
-      assert(read_data_v_o[id_i] == 1'b0);
       write_en_i[id_i] = 1'b0;
     endtask
 
@@ -109,7 +107,6 @@ module testbench();
         addr_i[id_i] = address_i;
         read_en_i[id_i] = 1'b1;
         clk_tick();
-        assert(read_data_v_o[id_i] == 1'b1);
         data_o = read_data_o[id_i];
         read_en_i[id_i] = 1'b0;
     endtask
@@ -302,7 +299,6 @@ generate
            ,.op_size_i(op_size_i[k])
            ,.write_data_i(write_data_i[k])
            ,.read_data_o(read_data_o[k])
-           ,.read_data_v_o(read_data_v_o[k])
                                   
            ,.rx_interrupt_pending_o(rx_interrupt_pending_o[k])
            ,.tx_interrupt_pending_o(tx_interrupt_pending_o[k])
