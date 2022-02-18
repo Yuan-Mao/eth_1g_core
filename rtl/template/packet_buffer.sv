@@ -218,6 +218,7 @@ generate
     bsg_mem_1rw_sync_mask_write_byte #(
         .els_p(buffer_mem_els_lp)
        ,.data_width_p(data_width_p)
+       ,.latch_last_read_p(1)
       ) buffer_mem (
         .clk_i(clk_i)
        ,.reset_i(reset_i)

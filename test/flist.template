@@ -38,6 +38,8 @@ $BASEJUMP_DIR/bsg_misc/bsg_nand.v
 $BASEJUMP_DIR/bsg_misc/bsg_xnor.v
 $BASEJUMP_DIR/bsg_misc/bsg_muxi2_gatestack.v
 $BASEJUMP_DIR/bsg_misc/bsg_dff.v
+$BASEJUMP_DIR/bsg_misc/bsg_dff_en.v
+$BASEJUMP_DIR/bsg_misc/bsg_dff_en_bypass.v
 $BASEJUMP_DIR/bsg_misc/bsg_dff_reset.v
 $BASEJUMP_DIR/bsg_misc/bsg_dff_reset_set_clear.v
 $BASEJUMP_DIR/bsg_dataflow/bsg_flow_counter.v
